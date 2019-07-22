@@ -1,0 +1,23 @@
+{
+        "datasets": ["training", "validation"],
+        "data_type":["id_s","affinity","coords","features"],
+        "data_path": "/home/mussaa/Downloads/AkeFiles/Files/project/Sipga_project/chimera/preprocessed_data",
+        "data_name": "refined_set_18.hdf",
+        "batch_size": 10,
+        "split_size":0.8,
+        "num_epochs":10,
+        "learning_rate":1e-5,
+        "max_to_keep":5,
+        "state_size": [784],
+        "num_iter_per_epoch": 10,
+        "conv_channels":[64, 128, 256],
+        "lmbda":0.001,
+        "dense_size":[1000,500,200],
+        "seed":123,
+        "input_size":21,
+        "num_chls":19,
+        "osize":1,
+        "conv_patch":5,
+        "pool_patch":2,
+        "checkpoint_dir":"/home/mussaa/Downloads/AkeFiles/Files/project/Sipga_project/model/structured/logs/model_checkpoints"
+}
