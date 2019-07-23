@@ -11,57 +11,13 @@ import numpy as np
     
 """
 
-
-'''
-    For the first time, assume:
-    , x_data, y_data,  data_set_path, self.config.input_size = 21, self.config.num_ = 19, self.config.osize = 1,
-                 conv_patch = 5, pool_patch = 2, self.config.conv_channels = [64, 128, 256],
-                 self.config.dense_size = [1000,500,200], lmbda = 0.001, self.config.learning_rate = 1e-5,
-                 seed = 123, batch_size = 10
-    
-    are located in the config file 
-'''
-
-'''
-    Example of a config file : 
-
-        "exp_name": "example",
-        "num_epochs": 10,
-        "num_iter_per_epoch": 10,
-        "self.config.learning_rate": 0.001,
-        "batch_size": 16,
-        "state_size": [784],
-        "max_to_keep":5
-
-'''
-
-
-'''
-    Current Attributes of config:
-        datasets
-        data_type
-        data_path
-        data_name
-        batch_size
-'''
-
 class ProtLigNet(BaseModel):
 
     def __init__(self, config):
         super().__init__(config)
-        self.graph = self.build_model()
+        self.build_model()
         self.init_saver()
         
-
-        '''
-        
-        , self.config.input_size = 21, self.config.num_ = 19, self.config.osize = 1,
-                 conv_patch = 5, pool_patch = 2, self.config.conv_channels = [64, 128, 256],
-                 self.config.dense_size = [1000,500,200], lmbda = 0.001, self.config.learning_rate = 1e-5,
-                 seed = 123, batch_size = 10
-        
-        '''
-
     def build_model(self):
     
         graph = tf.Graph()
@@ -117,17 +73,18 @@ class ProtLigNet(BaseModel):
 
                 optimizer = tf.train.AdamOptimizer(self.config.learning_rate, name = 'optimizer')
                 train = optimizer.minimize(loss, global_step = global_step, name = 'train')
-
-        return graph 
+        
+        self.graph = graph
+        # return graph 
 
     def init_saver(self):
-        self.saver = tf.train.Save(max_to_keep = self.config.max_to_keep)
+        with self.graph.as_default():
+            self.saver = tf.train.Saver(max_to_keep = self.config.max_to_keep)
 
     def feedforward(self, input, neurons_number, prob = 0.5):
         prev = input
         index = 0
         for number in neurons_number:
-            print('flc_layer%s'%index)
             output = self.hidden_flc(prev, number, prob, name = 'flc_layer%s' % index)
             prev = output 
             index += 1

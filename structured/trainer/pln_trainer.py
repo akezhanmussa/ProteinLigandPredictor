@@ -3,6 +3,7 @@ import os
 from tqdm import tqdm
 from sklearn.utils import shuffle
 import logging
+import tensorflow as tf
 
 logger = logging.getLogger(name = "whole_process_log")
 
@@ -15,7 +16,7 @@ class ProtLigTrainer(BaseTrain):
     def train(self):
         # tqdm much quickly does the iteration operations
 
-        loop = tqdm(range(self.config.num_iter_per_epoch))
+        # loop = tqdm(range(self.config.num_iter_per_epoch))
         graph = self.model.graph
         global_step = graph.get_tensor_by_name("training/global_step:0")
         
@@ -26,7 +27,10 @@ class ProtLigTrainer(BaseTrain):
         w_conv0 = graph.get_tensor_by_name('convolution/conv_layer_0/w:0')
 
         self.num_epochs = self.config.num_epochs
-        self.compare_error = float('inf')
+        compare_error = float('inf')
+        
+        with graph.as_default():
+            self.sess.run(tf.global_variables_initializer())
 
         for epoch in range(self.num_epochs):
             training_mse_err, validation_mse_err = self.train_epoch()
@@ -59,7 +63,7 @@ class ProtLigTrainer(BaseTrain):
 
         for bi, bj in self.data.batches('validation'):
             weight = (bj - bi)/self.data.dset_sizes["validation"]
-            val_err = session.run(self.mse, feed_dict = {x: self.data.g_batch('validation', x_v[bi:bj]), t: y_v[bi:bj]})
+            val_err = self.sess.run(self.mse, feed_dict = {x: self.data.g_batch('validation', x_v[bi:bj]), t: y_v[bi:bj]})
             validation_mse_err += weight * val_err
         
         return training_mse_err, validation_mse_err

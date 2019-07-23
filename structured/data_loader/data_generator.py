@@ -98,7 +98,7 @@ class DataGenerator:
                 extracts the whole specific column by specifying 
                 the col. index
             '''
-            charges.append(feature_data[..., features_map["partialcharge"]])
+            charges.append(feature_data[..., self.features_map["partialcharge"]])
         
         '''
             flatten the array of each molec. char vector to one vector
@@ -143,7 +143,7 @@ class DataGenerator:
             x.append(self.to_box(coords_index, feature_index))
             
         x = np.vstack(x)
-        x[..., self.features_map['partialcharge']] /= self.std
+        x[..., self.features_map['partialcharge']] /= self.std_charge
         return x 
     
     @staticmethod
