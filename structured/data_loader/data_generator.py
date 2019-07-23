@@ -1,13 +1,15 @@
 import numpy as np
 import sys
-sys.path.append("../utils")
-from custom_logger import Logger
-from constant import Constants
-from config import get_config
-from sklearn.utils import shuffle
 import h5py
 import os
 import logging
+# sys.path.append("../utils")
+from utils.custom_logger import Logger
+from utils.constant import Constants
+from utils.config import get_config
+
+from sklearn.utils import shuffle
+
 
 '''
     Attributes of config:
@@ -18,7 +20,7 @@ import logging
         batch_size
 '''
 
-logger = Logger(path = os.path.abspath('../logs'), name = "whole_process_log")
+logger = Logger(path = os.path.abspath('logs/'), name = "whole_process_log")
 
 class DataGenerator:
     def __init__(self, config):

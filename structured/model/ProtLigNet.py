@@ -1,5 +1,5 @@
 import tensorflow as tensorflow
-from structrued.base.base_model import BaseModel
+from base.base_model import BaseModel
 
 
 
