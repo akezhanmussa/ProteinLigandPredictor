@@ -1,11 +1,9 @@
 import os
-os.chdir('/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured')
-print(os.getcwd())
-from utils.config import get_config
-from model.ProtLigNet import ProtLigNet
-from data_loader.data_generator import DataGenerator
-from utils.custom_logger import Logger
-from trainer.pln_trainer import ProtLigTrainer
+from ..utils.config import get_config
+from ..model.ProtLigNet import ProtLigNet
+from ..data_loader.data_generator import DataGenerator
+from ..utils.custom_logger import Logger
+from ..trainer.pln_trainer import ProtLigTrainer
 import tensorflow as tf
 
 

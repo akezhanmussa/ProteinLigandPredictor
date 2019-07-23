@@ -1,9 +1,10 @@
 import numpy as np
 import sys
-sys.path.append("../utils")
-from custom_logger import Logger
-from constant import Constants
-from config import get_config
+from math import ceil
+# sys.path.append("../utils")
+from utils.custom_logger import Logger
+from utils.constant import Constants
+from utils.config import get_config
 from sklearn.utils import shuffle
 import h5py
 import os
@@ -18,7 +19,7 @@ import logging
         batch_size
 '''
 
-logger = Logger(path = os.path.abspath('../logs'), name = "whole_process_log")
+logger = Logger(path = os.path.abspath('logs/'), name = "whole_process_log")
 
 class DataGenerator:
     def __init__(self, config):
@@ -167,10 +168,10 @@ class DataGenerator:
     
     @staticmethod
     def to_box(coords, features, grid_resolution = 1.0, max_dist = 10.0):
-    '''
-        representing the coordinates as 3d grid with 21 Angstons diameter
-        for one molecular complex
-    '''
+        '''
+            representing the coordinates as 3d grid with 21 Angstons diameter
+            for one molecular complex
+        '''
 
         coords_num = len(coords)
         f_shape = features.shape
