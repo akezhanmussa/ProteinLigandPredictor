@@ -1,15 +1,13 @@
 import numpy as np
 import sys
+sys.path.append("../utils")
+from custom_logger import Logger
+from constant import Constants
+from config import get_config
+from sklearn.utils import shuffle
 import h5py
 import os
 import logging
-# sys.path.append("../utils")
-from utils.custom_logger import Logger
-from utils.constant import Constants
-from utils.config import get_config
-
-from sklearn.utils import shuffle
-
 
 '''
     Attributes of config:
@@ -20,7 +18,7 @@ from sklearn.utils import shuffle
         batch_size
 '''
 
-logger = Logger(path = os.path.abspath('logs/'), name = "whole_process_log")
+logger = Logger(path = os.path.abspath('../logs'), name = "whole_process_log")
 
 class DataGenerator:
     def __init__(self, config):
@@ -87,7 +85,7 @@ class DataGenerator:
             self.affinity[dataset] = np.reshape(self.affinity[dataset], (-1, 1))
         
         features_set = self.get_features_names()
-        features_map = {name:i for i,name in enumerate(features_set)}
+        self.features_map = {name:i for i,name in enumerate(features_set)}
         
         charges = []
         for feature_data in self.features["training"]:
@@ -130,8 +128,7 @@ class DataGenerator:
                 bj = self.dset_sizes[set_name]
             yield bi, bj
 
-    def g_batch(dataset = 'training', indices = range(0,10), rotation = 0):
-        global coords, features, std, features_map
+    def g_batch(self, dataset = 'training', indices = range(0,10), rotation = 0):
         x = []
         for index in indices:
             '''
@@ -139,13 +136,13 @@ class DataGenerator:
                 complex
             '''
 
-            coords_index = coords[dataset][index]
+            coords_index = self.coords[dataset][index]
             
-            feature_index = features[dataset][index]
-            x.append(to_box(coords_index, feature_index))
+            feature_index = self.features[dataset][index]
+            x.append(self.to_box(coords_index, feature_index))
             
         x = np.vstack(x)
-        x[..., features_map['partialcharge']] /= std
+        x[..., self.features_map['partialcharge']] /= self.std
         return x 
     
     @staticmethod
@@ -167,3 +164,38 @@ class DataGenerator:
         features += Constants.smarts_labels.value
 
         return features
+    
+    @staticmethod
+    def to_box(coords, features, grid_resolution = 1.0, max_dist = 10.0):
+    '''
+        representing the coordinates as 3d grid with 21 Angstons diameter
+        for one molecular complex
+    '''
+
+        coords_num = len(coords)
+        f_shape = features.shape
+        features_num = f_shape[1]
+
+        box_size = ceil(2*max_dist + 1)
+
+        '''
+            change coordinates of atoms to be relative to the center of the box
+        '''
+
+        grid_coords = (coords + max_dist) / grid_resolution 
+
+
+        # copies the arrays and casts its elements as integer
+        grid_coords = grid_coords.round().astype(int)
+
+        # detect which atoms are in the box 
+        # axis = 1 indicates the values in the rows would be checked
+        # since the shape of the coords - (N, 3)
+        inside_box = ((grid_coords >= 0) & (grid_coords < box_size)).all(axis = 1)
+
+        grid = np.zeros((1, box_size, box_size, box_size, features_num), dtype = np.float32)
+        
+        for (x, y, z), f in zip(grid_coords[inside_box], features[inside_box]):
+            grid[0, x, y, z] += f
+
+        return grid

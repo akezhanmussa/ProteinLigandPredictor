@@ -1,5 +1,6 @@
-import tensorflow as tensorflow
+import tensorflow as tf
 from base.base_model import BaseModel
+import numpy as np
 
 
 
@@ -66,7 +67,7 @@ class ProtLigNet(BaseModel):
         graph = tf.Graph()
 
         with graph.as_default():
-            np.random.seed(seed)
+            np.random.seed(self.config.seed)
             tf.set_random_seed(self.config.seed)
 
             after_conv_coord = 21
@@ -78,7 +79,7 @@ class ProtLigNet(BaseModel):
                 t = tf.placeholder(tf.float32, shape = (None, self.config.osize), name = "data_affinity")
 
             with tf.variable_scope('convolution'):
-                h_convs = convolve3D(x, self.config.conv_channels, conv_patch = self.config.conv_patch, pool_patch = self.config.pool_patch)
+                h_convs = self.convolve3D(x, self.config.conv_channels, conv_patch = self.config.conv_patch, pool_patch = self.config.pool_patch)
                 after_conv_coord = h_convs.get_shape()[-2].value
             
             all_var_aft_conv = self.config.conv_channels[-1] * pow(after_conv_coord, 3)
@@ -86,7 +87,7 @@ class ProtLigNet(BaseModel):
             with tf.variable_scope('f_connected'):
                 conv_to_flat = tf.reshape(h_convs, shape = (-1, all_var_aft_conv), name = 'after_conv_flat')
 
-                h_flc = feedforward(conv_to_flat, self.config.dense_size, prob = 0.5)
+                h_flc = self.feedforward(conv_to_flat, self.config.dense_size, prob = 0.5)
 
             with tf.variable_scope('output'):
                 w = tf.get_variable('w', shape = (self.config.dense_size[-1], self.config.osize),
@@ -122,14 +123,12 @@ class ProtLigNet(BaseModel):
     def init_saver(self):
         self.saver = tf.train.Save(max_to_keep = self.config.max_to_keep)
 
-
-    @staticmethod 
-    def feedforward(input, neurons_number, prob = 0.5):
+    def feedforward(self, input, neurons_number, prob = 0.5):
         prev = input
         index = 0
         for number in neurons_number:
             print('flc_layer%s'%index)
-            output = hidden_flc(prev, number, prob, name = 'flc_layer%s' % index)
+            output = self.hidden_flc(prev, number, prob, name = 'flc_layer%s' % index)
             prev = output 
             index += 1
         return prev 
@@ -147,14 +146,13 @@ class ProtLigNet(BaseModel):
 
         return h_drop
 
-    @staticmethod   
-    def convolve3D(input, channels = [64, 128, 256], conv_patch = 5, pool_patch = 2):
+    def convolve3D(self, input, channels = [64, 128, 256], conv_patch = 5, pool_patch = 2):
         
         prev = input
         index = 0
         
         for channel in channels:
-            result = hidden_conv3D(prev, channel, conv_patch, pool_patch, name = "conv_layer_%s" % index)
+            result = self.hidden_conv3D(prev, channel, conv_patch, pool_patch, name = "conv_layer_%s" % index)
             prev = result
             index += 1
 

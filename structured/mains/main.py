@@ -6,6 +6,7 @@ from model.ProtLigNet import ProtLigNet
 from data_loader.data_generator import DataGenerator
 from utils.custom_logger import Logger
 from trainer.pln_trainer import ProtLigTrainer
+import tensorflow as tf
 
 
 def main():

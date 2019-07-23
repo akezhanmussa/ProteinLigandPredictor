@@ -30,18 +30,8 @@ class ProtLigTrainer(BaseTrain):
         self.compare_error = float('inf')
 
         for epoch in range(num_epochs):
-                 
-                '''
-                    Add summaries after
-                '''
-                # summaries_dict = {
-                #     'mse':mse,
-                #     'loss':cost,
-                #     'weights':weights
-                # }
-
             training_mse_err, validation_mse_err = self.train_epoch()
-
+            
             if validation_mse_err < compare_error:
                 compare_error = validation_mse_err
                 self.model.saver.save(session, 'saved_models/model')
@@ -73,3 +63,12 @@ class ProtLigTrainer(BaseTrain):
         
 
 
+     
+                '''
+                    Add summaries after
+                '''
+                # summaries_dict = {
+                #     'mse':mse,
+                #     'loss':cost,
+                #     'weights':weights
+                # }
