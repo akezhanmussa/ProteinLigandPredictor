@@ -9,6 +9,7 @@ from sklearn.utils import shuffle
 import h5py
 import os
 import logging
+from math import pi, sin, cos
 
 '''
     Attributes of config:
@@ -28,6 +29,12 @@ class DataGenerator:
         self.fill_data()
 
     def split_data(self, file_name):
+        """Splitting the whole data set to train and validation set
+        
+        Split the data using the following parameters.
+        
+        :param file_name: The name of the data set
+        """        
         
         hdf_path = self.config.data_path
         hdf_file = hdf_path + '/' + file_name
@@ -53,6 +60,28 @@ class DataGenerator:
             logger.info("The splitting is done")
         else:
             logger.info("The splitting was done before")
+            
+    
+    def apply_rotation(self, x_angle, y_angle, z_angle):
+        
+        rot_x = np.array([[1, 0, 0],
+                          [0, cos(x_angle), -sin(x_angle)],
+                          [0, sin(x_angle),cos(x_angle)])
+        rot_y = np.array([[cos(y_angle, 0, sin(y_angle))],
+                          [0, 1, 0],
+                          [-sin(y_angle), 0, cos(y_angle)])
+        rot_z = np.array([[cos(z_angle),-sin(z_angle),0],
+                          [sin(z_angle),cos(z_angle),0],
+                          [0,0,1]]])
+        
+        mul_x_y = np.dot(rot_x, rot_y)
+        result = np.dot(mul_x_y, rot_z)
+        
+        return result
+
+    
+            
+    
 
     def fill_data(self):
 
@@ -129,6 +158,8 @@ class DataGenerator:
                 bj = self.dset_sizes[set_name]
             yield bi, bj
 
+    
+    
     def g_batch(self, dataset = 'training', indices = range(0,10), rotation = 0):
         x = []
         for index in indices:
