@@ -27,6 +27,7 @@ class DataGenerator:
         self.config = config
         self.split_data(self.config.data_name)
         self.fill_data()
+        self.
 
     def split_data(self, file_name):
         """Splitting the whole data set to train and validation set
@@ -62,7 +63,7 @@ class DataGenerator:
             logger.info("The splitting was done before")
             
     
-    def apply_rotation(self, x_angle, y_angle, z_angle):
+    def get_rotation(self, x_angle, y_angle, z_angle):
         
         rot_x = np.array([[1, 0, 0],
                           [0, cos(x_angle), -sin(x_angle)],
@@ -79,9 +80,6 @@ class DataGenerator:
         
         return result
 
-    
-            
-    
 
     def fill_data(self):
 
@@ -199,8 +197,7 @@ class DataGenerator:
     
     @staticmethod
     def to_box(coords, features, grid_resolution = 1.0, max_dist = 10.0):
-        '''
-            representing the coordinates as 3d grid with 21 Angstons diameter
+        ''' Representing the coordinates as 3d grid with 21 Angstons diameter
             for one molecular complex
         '''
 
@@ -209,12 +206,13 @@ class DataGenerator:
         features_num = f_shape[1]
 
         box_size = ceil(2*max_dist + 1)
+        box_width = box_size / 2
 
-        '''
-            change coordinates of atoms to be relative to the center of the box
-        '''
+        # '''
+        #     change coordinates of atoms to be relative to the center of the box
+        # '''
 
-        grid_coords = (coords + max_dist) / grid_resolution 
+        # grid_coords = (coords + max_dist) / grid_resolution 
 
 
         # copies the arrays and casts its elements as integer
@@ -223,7 +221,7 @@ class DataGenerator:
         # detect which atoms are in the box 
         # axis = 1 indicates the values in the rows would be checked
         # since the shape of the coords - (N, 3)
-        inside_box = ((grid_coords >= 0) & (grid_coords < box_size)).all(axis = 1)
+        inside_box = ((grid_coords > -box_width) & (grid_coords < box_width)).all(axis = 1)
 
         grid = np.zeros((1, box_size, box_size, box_size, features_num), dtype = np.float32)
         
