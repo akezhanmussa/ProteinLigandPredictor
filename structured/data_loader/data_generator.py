@@ -10,6 +10,7 @@ import h5py
 import os
 import logging
 from math import pi, sin, cos
+from itertools import combinations
 
 '''
     Attributes of config:
@@ -27,7 +28,8 @@ class DataGenerator:
         self.config = config
         self.split_data(self.config.data_name)
         self.fill_data()
-        self.
+        
+        
 
     def split_data(self, file_name):
         """Splitting the whole data set to train and validation set
@@ -61,25 +63,56 @@ class DataGenerator:
             logger.info("The splitting is done")
         else:
             logger.info("The splitting was done before")
-            
     
-    def get_rotation(self, x_angle, y_angle, z_angle):
+    def fill_rotations(self):
+        '''Predefine the rotation matrices
+        for data augmentation of the complexes
+        '''
         
-        rot_x = np.array([[1, 0, 0],
-                          [0, cos(x_angle), -sin(x_angle)],
-                          [0, sin(x_angle),cos(x_angle)])
-        rot_y = np.array([[cos(y_angle, 0, sin(y_angle))],
-                          [0, 1, 0],
-                          [-sin(y_angle), 0, cos(y_angle)])
-        rot_z = np.array([[cos(z_angle),-sin(z_angle),0],
-                          [sin(z_angle),cos(z_angle),0],
-                          [0,0,1]]])
+        self.rotation_matrices = []
         
-        mul_x_y = np.dot(rot_x, rot_y)
-        result = np.dot(mul_x_y, rot_z)
+        # Add the rotations around the primal axices
+        # for n*pi/4 angles 
+        for x in range(3):
+            for n in range(1, 8):
+                axis = np.zeros([3,1])
+                angle = n * (pi/4)
+                axis[x] = 1
+                self.rotation_matrices.append(self.get_rotation_matrix(axis, angle))
+                
+        # Add the rotations around the four space diagonals
+        # for n*pi/3 angles
+        space_axices = np.array([[1,1,-1],[1,1,1],[1,-1,-1],[1,-1,1]])
         
-        return result
-
+        for axis in space_axices:
+            for n in range(1, 6):
+                angle = n*(pi/3)
+                self.rotation_matrices.append(self.get_rotation_matrix(axis, angle))
+                
+        logger.info("The rotations matrices are processed")
+                
+    @staticmethod
+    def get_rotation_matrix(axis, angle):
+        '''Rotation matrix for any angle 
+        around any axis
+        
+        angle should be in range from [-1, 1] 
+        '''
+        
+        # normalize the units of the rotation axis
+        axis = axis / np.sqrt(np.dot(axis, axis))
+        
+        u1, u2, u3 = axis
+        
+        c = cos(angle)
+        s = sin(angle)
+        v = 1 - c
+        
+        rotation_matrix = np.array([[u1*v + c,u1*u2*v - u3*s, u1*u3*v + u2*s],
+                                    [u1*u2*v + u3*s, u2*u2*v + c, u2*u3*v - u1*s],
+                                    [u1*u3*v - u2*s, u2*u3*v + u1*s, u3*u3*v + c]])
+        return rotation_matrix
+    
 
     def fill_data(self):
 
