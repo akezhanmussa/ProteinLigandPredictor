@@ -245,7 +245,7 @@ class DataGenerator:
         #     change coordinates of atoms to be relative to the center of the box
         # '''
 
-        # grid_coords = (coords + max_dist) / grid_resolution 
+        grid_coords = (coords) / grid_resolution 
 
 
         # copies the arrays and casts its elements as integer
