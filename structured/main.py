@@ -10,9 +10,10 @@ import tensorflow as tf
 
 def main():
     config, _ = get_config(os.path.abspath('configs/pln_config.json'))
-
-    data = DataGenerator(config)
+    
     model = ProtLigNet(config)
+    data = DataGenerator(config)
+    
     """
         Some setup for the gpu usage
     """

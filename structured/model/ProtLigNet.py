@@ -1,7 +1,8 @@
 import tensorflow as tf
 from base.base_model import BaseModel
 import numpy as np
-
+import os
+from utils.custom_logger import Logger
 
 
 """
@@ -11,11 +12,14 @@ import numpy as np
     
 """
 
+logger = Logger(path = os.path.abspath('logs/'), name = "whole_process_log")
+
+
 class ProtLigNet(BaseModel):
 
     def __init__(self, config):
         super().__init__(config)
-        self.build_model()
+        self.find_model(f"{self.config.model_dir}/model.meta")
         self.init_saver()
         
     def build_model(self):
@@ -76,7 +80,17 @@ class ProtLigNet(BaseModel):
         
         self.graph = graph
         # return graph 
-
+    
+    def find_model(self, path_model):
+        if not os.path.isfile(path_model):
+            self.build_model()
+            logger.info("The model was created from scratch")
+        else:
+            _ = tf.train.import_meta_graph(path_model)
+            self.graph = tf.get_default_graph()
+            logger.info("The model was loaded")           
+            
+            
     def init_saver(self):
         with self.graph.as_default():
             self.saver = tf.train.Saver(max_to_keep = self.config.max_to_keep)

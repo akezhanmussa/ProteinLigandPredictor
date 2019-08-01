@@ -2,10 +2,10 @@
         "datasets": ["training", "validation"],
         "data_type":["id_s","affinity","coords","features"],
         "data_path": "/home/mussaa/Downloads/AkeFiles/Files/project/Sipga_project/chimera/preprocessed_data",
-        "data_name": "refined_set_18.hdf",
-        "batch_size": 10,
+        "data_name": "general_set.hdf",
+        "batch_size": 20,
         "split_size":0.8,
-        "num_epochs":10,
+        "num_epochs":20,
         "learning_rate":1e-5,
         "max_to_keep":5,
         "state_size": [784],
@@ -20,5 +20,6 @@
         "conv_patch":5,
         "pool_patch":2,
         "checkpoint_dir":"/home/mussaa/Downloads/AkeFiles/Files/project/Sipga_project/model/structured/logs/model_checkpoints",
-        "summary_dir":"/home/mussaa/Downloads/AkeFiles/Files/project/Sipga_project/model/structured/logs/graph_summaries"
+        "summary_dir":"/home/mussaa/Downloads/AkeFiles/Files/project/Sipga_project/model/structured/logs/graph_summaries",
+        "model_dir":"/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured/saved_models"
 }

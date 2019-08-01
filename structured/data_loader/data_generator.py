@@ -9,9 +9,9 @@ from sklearn.utils import shuffle
 import h5py
 import os
 import logging
-from math import pi, sin, cos
-from itertools import combinations
-
+from math import pi, sin, cos, sqrt
+from itertools import combinations, product, permutations
+np.seterr(invalid = 'raise')
 '''
     Attributes of config:
         datasets
@@ -21,16 +21,22 @@ from itertools import combinations
         batch_size
 '''
 
-logger = Logger(path = os.path.abspath('logs/'), name = "whole_process_log")
+global_index = 0
+
+logger = logging.getLogger(name = "whole_process_log")
 
 class DataGenerator:
     def __init__(self, config):
         self.config = config
+        
         self.split_data(self.config.data_name)
+        
+        # save the rotaion matrices
+        self.fill_rotations()
+        
+        # filling the 
         self.fill_data()
         
-        
-
     def split_data(self, file_name):
         """Splitting the whole data set to train and validation set
         
@@ -69,30 +75,55 @@ class DataGenerator:
         for data augmentation of the complexes
         '''
         
-        self.rotation_matrices = []
+        # The first rotation matrix is just the identity mapping
+        self.rotation_matrices = [self.get_rotation_matrix(np.array([1,1,1]), 0)]
         
         # Add the rotations around the primal axices
-        # for n*pi/4 angles 
-        for x in range(3):
-            for n in range(1, 8):
-                axis = np.zeros([3,1])
-                angle = n * (pi/4)
-                axis[x] = 1
-                self.rotation_matrices.append(self.get_rotation_matrix(axis, angle))
+        # for n*pi/8 angles
+        # rotations 3 * 7 = 21 
+        # for x in range(3):
+        #     for n in range(1, 8):
+        #         axis = np.zeros([3])
+        #         angle = n * (pi/8)
+        #         axis[x] = 1
+        #         self.rotation_matrices.append(self.get_rotation_matrix(axis, angle))
                 
-        # Add the rotations around the four space diagonals
-        # for n*pi/3 angles
-        space_axices = np.array([[1,1,-1],[1,1,1],[1,-1,-1],[1,-1,1]])
+        # # Add the rotations around the four space diagonals
+        # # for n*pi/8 angles
+        # # 8 * 4 = 32 rotations
+        # space_axices = np.array([[1,1,-1],[1,1,1],[1,-1,-1],[1,-1,1]])
         
-        for axis in space_axices:
-            for n in range(1, 6):
-                angle = n*(pi/3)
+        # for axis in space_axices:
+        #     for n in range(1, 8):
+        #         angle = n*(pi/8)
+        #         self.rotation_matrices.append(self.get_rotation_matrix(axis, angle))
+        
+        # # 6 * 3 = 18 rotations - face diagonals
+        # for (x,y) in combinations(range(3), 2):
+        #     for n in range(1, 6):
+        #         axis = np.zeros(3)
+        #         axis[[x,y]] = 1
+        #         angle = n * (pi/6)
+        #         self.rotation_matrices.append(self.get_rotation_matrix(axis, angle))
+        
+        
+        # 27 different rotations axices, with 100 angles for each
+        # matrix contains 2700 rotations 
+        for (x,y,z) in product([0,-1,1], repeat = 3):
+            for n in range(1, 100):
+                axis = np.array([x,y,z])
+                angle = n * (pi/50)
                 self.rotation_matrices.append(self.get_rotation_matrix(axis, angle))
-                
+
+        
+        
+        
+                            
         logger.info("The rotations matrices are processed")
                 
     @staticmethod
     def get_rotation_matrix(axis, angle):
+        
         '''Rotation matrix for any angle 
         around any axis
         
@@ -100,74 +131,104 @@ class DataGenerator:
         '''
         
         # normalize the units of the rotation axis
-        axis = axis / np.sqrt(np.dot(axis, axis))
         
+        try:
+            if not np.dot(axis,axis) == 0:
+                axis = axis / sqrt(np.dot(axis, axis))
+        except FloatingPointError as err:
+            print(axis)
+            print(type(axis))
+            print(str(err))
+
         u1, u2, u3 = axis
         
         c = cos(angle)
         s = sin(angle)
         v = 1 - c
         
-        rotation_matrix = np.array([[u1*v + c,u1*u2*v - u3*s, u1*u3*v + u2*s],
+        rotation_matrix = np.array([[u1*u1*v + c,u1*u2*v - u3*s, u1*u3*v + u2*s],
                                     [u1*u2*v + u3*s, u2*u2*v + c, u2*u3*v - u1*s],
                                     [u1*u3*v - u2*s, u2*u3*v + u1*s, u3*u3*v + c]])
         return rotation_matrix
     
-
+    @staticmethod
+    def rot_random(indices):
+        pairs = []
+        for (x,y) in combinations(indices, 2):
+            choices = list(permutations((0,x,y)))
+            pairs.append(choices[np.random.choice(len(choices), 1)[0]])
+        return pairs
+   
     def fill_data(self):
 
         self.id_s = {}
         self.affinity = {}
         self.coords = {}
         self.features = {}
-
-        logger.info("The filling data is started")
+        self.charges = {}
         
-        for dictionary in [self.id_s, self.affinity, self.coords, self.features]:
+        logger.info("The filling data has started")
+        
+        for dictionary in [self.id_s, self.affinity, self.coords, self.features,self.charges]:
             for dataset in self.config.datasets:
                 dictionary[dataset] = []
-        
-
-        for dataset in self.config.datasets:
-
-            file_path = os.path.abspath("%s/%s.hdf" % (self.config.data_path, dataset))
-
-            if not os.path.isfile(file_path): continue
-
-            with h5py.File(file_path, 'r') as f:
-                for pdb_id in f:
-                    one_set = f[pdb_id]
-                    self.coords[dataset].append(one_set[:, :3])
-                    self.features[dataset].append(one_set[:, 3:])
-                    self.affinity[dataset].append(one_set.attrs['affinity'])
-                    self.id_s[dataset].append(pdb_id)
-            
-            self.id_s[dataset] = np.array(self.id_s[dataset])
-            self.affinity[dataset] = np.reshape(self.affinity[dataset], (-1, 1))
         
         features_set = self.get_features_names()
         self.features_map = {name:i for i,name in enumerate(features_set)}
         
-        charges = []
-        for feature_data in self.features["training"]:
-            '''
-                Extraction of charges of each molecule, 
-                just pointing the column number
-
-                notation -> ..., columnIndex
-                extracts the whole specific column by specifying 
-                the col. index
-            '''
-            charges.append(feature_data[..., self.features_map["partialcharge"]])
+        rotations = []
+        index = None
+        for dataset in self.config.datasets:
+            
+            if dataset == 'training':
+                rotations = self.rot_random(range(1, len(self.rotation_matrices)))
+            else: 
+                rotations = [[0]]
+                
+            
         
-        '''
-            flatten the array of each molec. char vector to one vector
-        '''
-        
-        charges = np.concatenate([charge.flatten() for charge in charges])
-        self.mean_charge = charges.mean()
-        self.std_charge = charges.std()
+            file_path = os.path.abspath("%s/%s.hdf" % (self.config.data_path, dataset))
+            if not os.path.isfile(file_path): continue
+            
+            with h5py.File(file_path, 'r') as f:
+                for pdb_id in f:
+                    index = np.random.choice(len(rotations), 1)[0]
+                    rotation_index = rotations[index]
+                    
+                    # print(rotation_index)
+                    # break
+                    
+                    for idx in rotation_index:
+                        one_set = f[pdb_id]
+                        self.coords[dataset].append(np.dot(one_set[:, :3],self.rotation_matrices[idx]))
+                        self.features[dataset].append(one_set[:, 3:])
+                        self.affinity[dataset].append(one_set.attrs['affinity'])
+                        self.id_s[dataset].append(pdb_id)
 
+            self.id_s[dataset] = np.array(self.id_s[dataset])
+            self.affinity[dataset] = np.reshape(self.affinity[dataset], (-1, 1))        
+
+            
+            for feature_data in self.features[dataset]:
+                                
+                '''
+                    Extraction of charges of each molecule, 
+                    just pointing the column number
+
+                    notation -> ..., columnIndex
+                    extracts the whole specific column by specifying 
+                    the col. index
+                '''
+                self.charges[dataset].append(feature_data[..., self.features_map["partialcharge"]])
+            
+            '''
+                flatten the array of each molec. char vector to one vector
+            '''
+            # print(len(self.features['validation']))
+
+            self.charges[dataset] = np.concatenate([charge.flatten() for charge in self.charges[dataset]])
+
+        self.charges_std = {'training':self.charges['training'].std(), 'validation':self.charges['validation'].std()}
 
         '''
             indexes where the molcode equals to one and
@@ -183,15 +244,15 @@ class DataGenerator:
     
     def batches(self, set_name):
         for b in range(self.num_batches[set_name]):
-            bi = b * 10
-            bj = (b + 1)*10
+            bi = b * self.config.batch_size
+            bj = (b + 1)*self.config.batch_size
             if b == self.num_batches[set_name] - 1:
                 bj = self.dset_sizes[set_name]
             yield bi, bj
 
     
     
-    def g_batch(self, dataset = 'training', indices = range(0,10), rotation = 0):
+    def g_batch(self, dataset = 'training', indices = range(0,10), rotation = None):
         x = []
         for index in indices:
             '''
@@ -199,13 +260,13 @@ class DataGenerator:
                 complex
             '''
 
-            coords_index = self.coords[dataset][index]
+            coords_index = self.coords[dataset][index] if rotation is None else np.dot(self.coords[dataset][index], rotation)
             
             feature_index = self.features[dataset][index]
             x.append(self.to_box(coords_index, feature_index))
             
         x = np.vstack(x)
-        x[..., self.features_map['partialcharge']] /= self.std_charge
+        x[..., self.features_map['partialcharge']] /= self.charges_std[dataset]
         return x 
     
     @staticmethod
