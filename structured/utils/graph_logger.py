@@ -1,44 +1,37 @@
 import tensorflow as tf
 import os
-
+import tensorflow as tf
 
 class GraphLogger:
-    def __init__(self, sess,config):
+    def __init__(self,sess,config):
         self.sess = sess
         self.config = config
-        self.summary_placeholders = {}
-        self.summary_ops = {}
         self.train_summary_writer = tf.summary.FileWriter(os.path.join(self.config.summary_dir, "train"),
-                                                          self.sess.graph)
+                                                          tf.get_default_graph())
         self.test_summary_writer = tf.summary.FileWriter(os.path.join(self.config.summary_dir, "test"))
 
     # it can summarize scalars and images.
-    def summarize(self, step, summarizer="train", scope="", summaries_dict=None):
+    def summarize(self):
+        """Creating summaries for feature importance
+        and other attributes of the graph
         """
-        :param step: the step of the summary
-        :param summarizer: use the train summary writer or the test one
-        :param scope: variable scope
-        :param summaries_dict: the dict of the summaries values (tag,value)
-        :return:
-        """
-        summary_writer = self.train_summary_writer if summarizer == "train" else self.test_summary_writer
-        with tf.variable_scope(scope):
+        
+        # getting the first weights of shape (filter_size, filter_size, filter_size, input_channel, out_channel)
+        w_zeroconv =  self.sess.graph.get_tensor_by_name('convolution/conv_layer_0/w:0')
+            
+        # just splitting the weights by each feature, axis points to the input_channel split
+        feature_weights = tf.split(w_zeroconv, w_zeroconv.shape[-2].value, axis = 3)
+            # features_importance = tf.reduce_sum(tf.abs(w_zeroconv), reduction_indices = [1,2,4], name = "feature_importance")
+        
+        summaries = tf.summary.merge((
+            tf.summary.histogram('weights', w_zeroconv), 
+            *(tf.summary.histogram(f'weights_{index}', value) for index, value in enumerate(feature_weights)),
+            tf.summary.scalar('mse', self.sess.graph.get_tensor_by_name('training/mse:0')), 
+            tf.summary.scalar('mse', self.sess.graph.get_tensor_by_name('training/loss:0'))
+        ))
 
-            if summaries_dict is not None:
-                summary_list = []
-                for tag, value in summaries_dict.items():
-                    if tag not in self.summary_ops:
-                        if len(value.shape) <= 1:
-                            self.summary_placeholders[tag] = tf.placeholder('float32', value.shape, name=tag)
-                        else:
-                            self.summary_placeholders[tag] = tf.placeholder('float32', [None] + list(value.shape[1:]), name=tag)
-                        if len(value.shape) <= 1:
-                            self.summary_ops[tag] = tf.summary.scalar(tag, self.summary_placeholders[tag])
-                        else:
-                            self.summary_ops[tag] = tf.summary.image(tag, self.summary_placeholders[tag])
-
-                    summary_list.append(self.sess.run(self.summary_ops[tag], {self.summary_placeholders[tag]: value}))
-
-                for summary in summary_list:
-                    summary_writer.add_summary(summary, step)
-                summary_writer.flush()
+        return summaries
+                
+                
+        
+        

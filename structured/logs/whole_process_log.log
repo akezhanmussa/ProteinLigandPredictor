@@ -477,3 +477,77 @@
 08/01/2019:The rotations matrices are processed
 08/01/2019:The filling data has started
 08/01/2019:the filling is done
+08/01/2019:The model was created from scratch
+08/01/2019:The splitting was done before
+08/01/2019:The rotations matrices are processed
+08/01/2019:The filling data has started
+08/01/2019:The model was created from scratch
+08/01/2019:The splitting was done before
+08/01/2019:The rotations matrices are processed
+08/01/2019:The filling data has started
+08/01/2019:the filling is done
+08/01/2019:The model was created from scratch
+08/01/2019:The splitting was done before
+08/01/2019:The rotations matrices are processed
+08/01/2019:The filling data has started
+08/01/2019:the filling is done
+08/01/2019:The model was created from scratch
+08/01/2019:The splitting was done before
+08/01/2019:The rotations matrices are processed
+08/01/2019:The filling data has started
+08/01/2019:the filling is done
+08/01/2019:The model was created from scratch
+08/01/2019:The splitting was done before
+08/01/2019:The rotations matrices are processed
+08/01/2019:The filling data has started
+08/01/2019:the filling is done
+08/01/2019:The model was created from scratch
+08/01/2019:The splitting was done before
+08/01/2019:The rotations matrices are processed
+08/01/2019:The filling data has started
+08/01/2019:the filling is done
+08/02/2019:The model was created from scratch
+08/02/2019:The splitting was done before
+08/02/2019:The rotations matrices are processed
+08/02/2019:The filling data has started
+08/02/2019:The model was created from scratch
+08/02/2019:The splitting was done before
+08/02/2019:The rotations matrices are processed
+08/02/2019:The filling data has started
+08/02/2019:the filling is done
+08/02/2019:The model was created from scratch
+08/02/2019:The splitting was done before
+08/02/2019:The rotations matrices are processed
+08/02/2019:The filling data has started
+08/02/2019:the filling is done
+08/02/2019:The model was created from scratch
+08/02/2019:The splitting was done before
+08/02/2019:The rotations matrices are processed
+08/02/2019:The filling data has started
+08/02/2019:the filling is done
+08/02/2019:The model was created from scratch
+08/02/2019:The splitting was done before
+08/02/2019:The rotations matrices are processed
+08/02/2019:The filling data has started
+08/02/2019:the filling is done
+08/02/2019:AFTER THE EPOCH 0, the mse_training is 1.9796355379886599 and mse_validation is 1.7800647663965323
+08/02/2019:AFTER THE EPOCH 1, the mse_training is 1.7466453840806098 and mse_validation is 1.7540155149396008
+08/02/2019:AFTER THE EPOCH 2, the mse_training is 1.7344034441484515 and mse_validation is 1.8014796196250333
+08/02/2019:AFTER THE EPOCH 3, the mse_training is 1.7288939862114465 and mse_validation is 1.7900327435621748
+08/02/2019:AFTER THE EPOCH 4, the mse_training is 1.7254726382179233 and mse_validation is 1.7611082788013508
+08/02/2019:AFTER THE EPOCH 5, the mse_training is 1.7212392181418554 and mse_validation is 1.7294774678973368
+08/02/2019:AFTER THE EPOCH 6, the mse_training is 1.7140451749794496 and mse_validation is 1.718140721451687
+08/02/2019:AFTER THE EPOCH 7, the mse_training is 1.7163497343984342 and mse_validation is 1.7496457191744719
+08/02/2019:AFTER THE EPOCH 8, the mse_training is 1.7109294526712975 and mse_validation is 1.7207743458860238
+08/02/2019:AFTER THE EPOCH 9, the mse_training is 1.7116832037716392 and mse_validation is 1.7118658917565108
+08/02/2019:AFTER THE EPOCH 10, the mse_training is 1.7064951230868417 and mse_validation is 1.7100212399564478
+08/02/2019:AFTER THE EPOCH 11, the mse_training is 1.7015002637919945 and mse_validation is 1.7683161706517307
+08/02/2019:AFTER THE EPOCH 12, the mse_training is 1.701372901937176 and mse_validation is 1.7137247351303617
+08/02/2019:AFTER THE EPOCH 13, the mse_training is 1.6969888670926445 and mse_validation is 1.7391572104434454
+08/02/2019:AFTER THE EPOCH 14, the mse_training is 1.6962787293659742 and mse_validation is 1.7380280987495595
+08/02/2019:AFTER THE EPOCH 15, the mse_training is 1.6922004712293235 and mse_validation is 1.698898336551589
+08/02/2019:AFTER THE EPOCH 16, the mse_training is 1.6897761038052346 and mse_validation is 1.7158883683928383
+08/02/2019:AFTER THE EPOCH 17, the mse_training is 1.6881820151237676 and mse_validation is 1.7084577825825165
+08/02/2019:AFTER THE EPOCH 18, the mse_training is 1.6801011467895728 and mse_validation is 1.7179062585689007
+08/02/2019:AFTER THE EPOCH 19, the mse_training is 1.6761591629960853 and mse_validation is 1.6820813351979653
+08/02/2019:Errors are recorded in errros.csv

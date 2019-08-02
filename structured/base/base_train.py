@@ -2,9 +2,9 @@ import tensorflow as tf
 
 
 class BaseTrain:
-    def __init__(self, sess, model, data, config, logger):
+    def __init__(self, sess, model, data, config, graph_logg):
         self.model = model
-        self.logger = logger
+        self.graph_logg = graph_logg
         self.config = config
         self.sess = sess
         self.data = data

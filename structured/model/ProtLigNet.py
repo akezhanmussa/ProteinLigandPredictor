@@ -46,8 +46,11 @@ class ProtLigNet(BaseModel):
 
             with tf.variable_scope('f_connected'):
                 conv_to_flat = tf.reshape(h_convs, shape = (-1, all_var_aft_conv), name = 'after_conv_flat')
-
-                h_flc = self.feedforward(conv_to_flat, self.config.dense_size, prob = 0.5)
+                prob = tf.constant(1.0, name = 'prob_default')
+                
+                prob_placeholder = tf.placeholder_with_default(prob, shape = (), name = 'keep_prob')
+                
+                h_flc = self.feedforward(conv_to_flat, self.config.dense_size, prob = prob_placeholder)
 
             with tf.variable_scope('output'):
                 w = tf.get_variable('w', shape = (self.config.dense_size[-1], self.config.osize),
@@ -74,7 +77,6 @@ class ProtLigNet(BaseModel):
                     l2 =  self.config.lmbda * tf.reduce_mean([tf.reduce_sum(tf.pow(wi, 2)) for wi in all_weights])
 
                 loss = tf.add(mse, l2, name = "loss")
-
                 optimizer = tf.train.AdamOptimizer(self.config.learning_rate, name = 'optimizer')
                 train = optimizer.minimize(loss, global_step = global_step, name = 'train')
         

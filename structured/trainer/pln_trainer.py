@@ -6,19 +6,21 @@ import logging
 import tensorflow as tf
 import pandas as pd
 import csv
+from math import sqrt
 
 logger = logging.getLogger(name = "whole_process_log")
 
 class ProtLigTrainer(BaseTrain):
 
-    def __init__(self, sess, model, data, config, logger):
-        super().__init__(sess, model, data, config, logger)
+    def __init__(self, sess, model, data, config, graph_logg):
+        super().__init__(sess, model, data, config, graph_logg)
     
 
     def train(self):
         # tqdm much quickly does the iteration operations
 
         # loop = tqdm(range(self.config.num_iter_per_epoch))
+        
         train_mse_all_error = []
         val_mse_all_error = []
         
@@ -30,6 +32,7 @@ class ProtLigTrainer(BaseTrain):
         self.train_step = graph.get_tensor_by_name('training/train:0')
         self.mse = graph.get_tensor_by_name('training/mse:0')
         self.cost = graph.get_tensor_by_name('training/loss:0')
+        self.summaries = self.graph_logg.summarize()
 
         self.num_epochs = self.config.num_epochs
         compare_error = float('inf')
@@ -48,9 +51,11 @@ class ProtLigTrainer(BaseTrain):
 
             train_mse_all_error.append(training_mse_err)
             val_mse_all_error.append(validation_mse_err)
-            logger.info("AFTER THE EPOCH {}, the mse_training is {} and mse_validation is {}".format(epoch, training_mse_err, validation_mse_err))
+            logger.info("AFTER THE EPOCH {}, the mse_training is {} and mse_validation is {}".format(epoch, sqrt(training_mse_err), sqrt(validation_mse_err)))
         
         self.save_to_csv(train_mse_all_error, val_mse_all_error)
+        self.graph_logg.train_summary_writer.close()
+        self.graph_logg.test_summary_writer.close()
         self.sess.close()
         
 
@@ -58,11 +63,7 @@ class ProtLigTrainer(BaseTrain):
     #     if os.path.isfile('saved_models/'):
     #             latest_checkpoint = tf.train.latest_checkpoint('saved_models/')
     #             self.saver.restore(self.sess, latest_checkpoint)
-        
-        
-        
-    
-    
+     
     @staticmethod
     def save_to_csv(train_error, val_error):
         
@@ -79,25 +80,39 @@ class ProtLigTrainer(BaseTrain):
         x = self.model.graph.get_tensor_by_name('input/data_x:0')
         t = self.model.graph.get_tensor_by_name('input/data_affinity:0')
         y = self.model.graph.get_tensor_by_name('output/prediction:0')
+        keep_prob = self.model.graph.get_tensor_by_name('f_connected/keep_prob:0')
         
         x_t, y_t = shuffle(range(self.data.dset_sizes['training']), self.data.affinity['training'])
-                    
+          
         training_mse_err = 0
         validation_mse_err = 0
 
         for bi, bj in self.data.batches('training'):
             weight = (bj - bi)/self.data.dset_sizes["training"]
-            self.sess.run(self.train_step, feed_dict = {x: self.data.g_batch('training', x_t[bi:bj]), t: y_t[bi:bj]})
+            self.sess.run(self.train_step, feed_dict = {x: self.data.g_batch('training', x_t[bi:bj]), t: y_t[bi:bj], keep_prob: 0.5})
             train_err = self.sess.run(self.mse, feed_dict = {x: self.data.g_batch('training', x_t[bi:bj]), t: y_t[bi:bj]})
             training_mse_err += weight * train_err
 
+        train_summaries = self.sess.run(self.summaries, feed_dict = {
+            x:self.data.g_batch('training', x_t[:self.config.batch_size]),
+            t:y_t[:self.config.batch_size], keep_prob:1.0})
+        
+        self.graph_logg.train_summary_writer.add_summary(train_summaries, tf.train.get_global_step())
+        
         x_v, y_v = shuffle(range(self.data.dset_sizes['validation']), self.data.affinity['validation'])
 
+        
         for bi, bj in self.data.batches('validation'):
             weight = (bj - bi)/self.data.dset_sizes["validation"]
             val_err = self.sess.run(self.mse, feed_dict = {x: self.data.g_batch('validation', x_v[bi:bj]), t: y_v[bi:bj]})
             validation_mse_err += weight * val_err
+            
+        test_summaries = self.sess.run(self.summaries, feed_dict = {
+                x:self.data.g_batch('validation', x_v[:self.config.batch_size]),
+                t:y_v[:self.config.batch_size], keep_prob:1.0})
         
+        self.graph_logg.test_summary_writer.add_summary(test_summaries, tf.train.get_global_step())
+
         return training_mse_err, validation_mse_err
         
 
