@@ -1,6 +1,8 @@
 import tensorflow as tf
 import os
 import tensorflow as tf
+from data_loader.data_generator import DataGenerator
+
 
 class GraphLogger:
     def __init__(self,sess,config):
@@ -16,6 +18,9 @@ class GraphLogger:
         and other attributes of the graph
         """
         
+        features_map = DataGenerator.get_features_names()
+        
+        
         # getting the first weights of shape (filter_size, filter_size, filter_size, input_channel, out_channel)
         w_zeroconv =  self.sess.graph.get_tensor_by_name('convolution/conv_layer_0/w:0')
             
@@ -25,7 +30,7 @@ class GraphLogger:
         
         summaries = tf.summary.merge((
             tf.summary.histogram('weights', w_zeroconv), 
-            *(tf.summary.histogram(f'weights_{index}', value) for index, value in enumerate(feature_weights)),
+            *(tf.summary.histogram(f'weights_{feature_name}', value) for feature_name, value in zip(features_map, feature_weights)),
             tf.summary.scalar('mse', self.sess.graph.get_tensor_by_name('training/mse:0')), 
             tf.summary.scalar('mse', self.sess.graph.get_tensor_by_name('training/loss:0'))
         ))

@@ -22,8 +22,8 @@ class ProtLigTrainer(BaseTrain):
 
         # loop = tqdm(range(self.config.num_iter_per_epoch))
         
-        train_mse_all_error = []
-        val_mse_all_error = []
+        train_rmse_all_error = []
+        val_rmse_all_error = []
         
         graph = self.model.graph
         global_step = graph.get_tensor_by_name("training/global_step:0")
@@ -44,19 +44,19 @@ class ProtLigTrainer(BaseTrain):
             self.sess.run(tf.global_variables_initializer())
 
         for epoch in range(self.num_epochs):
-            training_mse_err, validation_mse_err = self.train_epoch()
+            training_mse_err, validation_mse_err = self.train_epoch(epoch)
             
             if validation_mse_err < compare_error:
                 compare_error = validation_mse_err
                 self.model.saver.save(self.sess, 'saved_models/model')
 
-            train_mse_all_error.append(training_mse_err)
-            val_mse_all_error.append(validation_mse_err)
+            train_rmse_all_error.append(sqrt(training_mse_err))
+            val_rmse_all_error.append(sqrt(validation_mse_err))
             logger.info("AFTER THE EPOCH {}, the mse_training is {} and mse_validation is {}".format(epoch, sqrt(training_mse_err), sqrt(validation_mse_err)))
         
-        self.save_to_csv(train_mse_all_error, val_mse_all_error)
         self.graph_logg.train_summary_writer.close()
         self.graph_logg.test_summary_writer.close()
+        self.save_to_csv(train_rmse_all_error, val_rmse_all_error, self.config.error_dir)
         self.sess.close()
         
 
@@ -66,11 +66,11 @@ class ProtLigTrainer(BaseTrain):
     #             self.saver.restore(self.sess, latest_checkpoint)
      
     @staticmethod
-    def save_to_csv(train_error, val_error):
+    def save_to_csv(train_error, val_error, path):
         
-        curent_time = datetime.now().strftime("%d/%m/%Y_%H:%M:%S")
+        curent_time = datetime.now().strftime("%d%m%Y_%H:%M:%S")
         
-        with open(os.path.abspath(f"../logs/training_errors/errors_{curent_time}.csv"), 'w') as csv_file:
+        with open(f"{path}/errors_{curent_time}.csv", 'w') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames = ["train_error", "val_error"])
             writer.writeheader()
             
@@ -79,7 +79,7 @@ class ProtLigTrainer(BaseTrain):
             
         logger.info("Errors are recorded in errros.csv")
         
-    def train_epoch(self):
+    def train_epoch(self, epoch_num = 0):
         x = self.model.graph.get_tensor_by_name('input/data_x:0')
         t = self.model.graph.get_tensor_by_name('input/data_affinity:0')
         y = self.model.graph.get_tensor_by_name('output/prediction:0')
@@ -100,7 +100,7 @@ class ProtLigTrainer(BaseTrain):
             x:self.data.g_batch('training', x_t[:self.config.batch_size]),
             t:y_t[:self.config.batch_size], keep_prob:1.0})
         
-        self.graph_logg.train_summary_writer.add_summary(train_summaries, tf.train.get_global_step())
+        self.graph_logg.train_summary_writer.add_summary(train_summaries, epoch_num)
         
         x_v, y_v = shuffle(range(self.data.dset_sizes['validation']), self.data.affinity['validation'])
 
@@ -114,7 +114,7 @@ class ProtLigTrainer(BaseTrain):
                 x:self.data.g_batch('validation', x_v[:self.config.batch_size]),
                 t:y_v[:self.config.batch_size], keep_prob:1.0})
         
-        self.graph_logg.test_summary_writer.add_summary(test_summaries, tf.train.get_global_step())
+        self.graph_logg.test_summary_writer.add_summary(test_summaries, epoch_num)
 
         return training_mse_err, validation_mse_err
         

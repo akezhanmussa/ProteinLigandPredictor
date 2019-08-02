@@ -551,3 +551,28 @@
 08/02/2019:AFTER THE EPOCH 18, the mse_training is 1.6801011467895728 and mse_validation is 1.7179062585689007
 08/02/2019:AFTER THE EPOCH 19, the mse_training is 1.6761591629960853 and mse_validation is 1.6820813351979653
 08/02/2019:Errors are recorded in errros.csv
+08/02/2019:The model was loaded
+08/02/2019:The splitting was done before
+08/02/2019:The rotations matrices are processed
+08/02/2019:The filling data has started
+08/02/2019:the filling is done
+08/02/2019:AFTER THE EPOCH 0, the mse_training is 1.9176787189901563 and mse_validation is 1.7470716807987294
+08/02/2019:AFTER THE EPOCH 1, the mse_training is 1.738282491518969 and mse_validation is 1.7350191517730533
+08/02/2019:AFTER THE EPOCH 2, the mse_training is 1.7284478278043731 and mse_validation is 1.782578566025397
+08/02/2019:AFTER THE EPOCH 3, the mse_training is 1.7262368766834544 and mse_validation is 1.7512812281991623
+08/02/2019:AFTER THE EPOCH 4, the mse_training is 1.718837705371959 and mse_validation is 1.7183874061624664
+08/02/2019:AFTER THE EPOCH 5, the mse_training is 1.716977914779424 and mse_validation is 1.7145710092993445
+08/02/2019:AFTER THE EPOCH 6, the mse_training is 1.7118762012958069 and mse_validation is 1.713600520927527
+08/02/2019:AFTER THE EPOCH 7, the mse_training is 1.7079319969857307 and mse_validation is 1.7473258081142629
+08/02/2019:AFTER THE EPOCH 8, the mse_training is 1.7058362380559877 and mse_validation is 1.7120882750694129
+08/02/2019:AFTER THE EPOCH 9, the mse_training is 1.702097177872295 and mse_validation is 1.725539364738335
+08/02/2019:AFTER THE EPOCH 10, the mse_training is 1.6990863223699413 and mse_validation is 1.701023808761925
+08/02/2019:AFTER THE EPOCH 11, the mse_training is 1.6972392812942976 and mse_validation is 1.7671268312388455
+08/02/2019:AFTER THE EPOCH 12, the mse_training is 1.6921324634441595 and mse_validation is 1.7192377796339742
+08/02/2019:AFTER THE EPOCH 13, the mse_training is 1.6891167799298175 and mse_validation is 1.707003431432415
+08/02/2019:AFTER THE EPOCH 14, the mse_training is 1.6876322637344514 and mse_validation is 1.687932056501467
+08/02/2019:AFTER THE EPOCH 15, the mse_training is 1.681935290964058 and mse_validation is 1.736596977558375
+08/02/2019:AFTER THE EPOCH 16, the mse_training is 1.6764217865336275 and mse_validation is 1.6810177842556593
+08/02/2019:AFTER THE EPOCH 17, the mse_training is 1.6698564986739224 and mse_validation is 1.6810884834011832
+08/02/2019:AFTER THE EPOCH 18, the mse_training is 1.6578555928429006 and mse_validation is 1.7333429633581985
+08/02/2019:AFTER THE EPOCH 19, the mse_training is 1.645777034437181 and mse_validation is 1.659888232089016

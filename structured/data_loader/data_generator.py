@@ -77,36 +77,7 @@ class DataGenerator:
         
         # The first rotation matrix is just the identity mapping
         self.rotation_matrices = [self.get_rotation_matrix(np.array([1,1,1]), 0)]
-        
-        # Add the rotations around the primal axices
-        # for n*pi/8 angles
-        # rotations 3 * 7 = 21 
-        # for x in range(3):
-        #     for n in range(1, 8):
-        #         axis = np.zeros([3])
-        #         angle = n * (pi/8)
-        #         axis[x] = 1
-        #         self.rotation_matrices.append(self.get_rotation_matrix(axis, angle))
-                
-        # # Add the rotations around the four space diagonals
-        # # for n*pi/8 angles
-        # # 8 * 4 = 32 rotations
-        # space_axices = np.array([[1,1,-1],[1,1,1],[1,-1,-1],[1,-1,1]])
-        
-        # for axis in space_axices:
-        #     for n in range(1, 8):
-        #         angle = n*(pi/8)
-        #         self.rotation_matrices.append(self.get_rotation_matrix(axis, angle))
-        
-        # # 6 * 3 = 18 rotations - face diagonals
-        # for (x,y) in combinations(range(3), 2):
-        #     for n in range(1, 6):
-        #         axis = np.zeros(3)
-        #         axis[[x,y]] = 1
-        #         angle = n * (pi/6)
-        #         self.rotation_matrices.append(self.get_rotation_matrix(axis, angle))
-        
-        
+            
         # 27 different rotations axices, with 100 angles for each
         # matrix contains 2700 rotations 
         for (x,y,z) in product([0,-1,1], repeat = 3):
@@ -114,11 +85,7 @@ class DataGenerator:
                 axis = np.array([x,y,z])
                 angle = n * (pi/50)
                 self.rotation_matrices.append(self.get_rotation_matrix(axis, angle))
-
-        
-        
-        
-                            
+   
         logger.info("The rotations matrices are processed")
                 
     @staticmethod
@@ -152,12 +119,30 @@ class DataGenerator:
         return rotation_matrix
     
     @staticmethod
-    def rot_random(indices):
-        pairs = []
-        for (x,y) in combinations(indices, 2):
-            choices = list(permutations((0,x,y)))
-            pairs.append(choices[np.random.choice(len(choices), 1)[0]])
-        return pairs
+    def rot_random(dataset, indices):
+        
+        pair = []
+        
+        if dataset == 'validation':
+            return [0]
+        elif dataset == 'training':
+            while True:
+                x = np.random.choice(indices, 20)
+                x = np.append(x, 0)
+                unique_three = set(x)
+            
+                if len(unique_three) >= 4:
+                    break
+            
+            for index, elem in enumerate(unique_three):
+                if index == 4:
+                    break
+                pair.append(elem)
+            
+        if len(pair) == 0:
+            logger.info("The wrong dataset name, check the name")
+        
+        return pair
    
     def fill_data(self):
 
@@ -176,28 +161,15 @@ class DataGenerator:
         features_set = self.get_features_names()
         self.features_map = {name:i for i,name in enumerate(features_set)}
         
-        rotations = []
-        index = None
         for dataset in self.config.datasets:
-            
-            if dataset == 'training':
-                rotations = self.rot_random(range(1, len(self.rotation_matrices)))
-            else: 
-                rotations = [[0]]
-                
-            
         
             file_path = os.path.abspath("%s/%s.hdf" % (self.config.data_path, dataset))
             if not os.path.isfile(file_path): continue
             
             with h5py.File(file_path, 'r') as f:
                 for pdb_id in f:
-                    index = np.random.choice(len(rotations), 1)[0]
-                    rotation_index = rotations[index]
-                    
-                    # print(rotation_index)
-                    # break
-                    
+                    rotation_index = self.rot_random(dataset, len(self.rotation_matrices))
+                   
                     for idx in rotation_index:
                         one_set = f[pdb_id]
                         self.coords[dataset].append(np.dot(one_set[:, :3],self.rotation_matrices[idx]))

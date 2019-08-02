@@ -1,4 +1,4 @@
-from itertools import combinations, permutations
+from itertools import combinations, permutations,product
 from math import cos,sin,sqrt,pi
 import numpy as np
 
@@ -12,7 +12,8 @@ def get_rotation_matrix(axis, angle):
         '''
         
         # normalize the units of the rotation axis
-        axis = axis / sqrt(np.dot(axis, axis))
+        if not np.dot(axis, axis) == 0:
+            axis = axis / sqrt(np.dot(axis, axis))
         
         u1, u2, u3 = axis
         
@@ -25,13 +26,50 @@ def get_rotation_matrix(axis, angle):
                                     [u1*u3*v - u2*s, u2*u3*v + u1*s, u3*u3*v + c]])
         return rotation_matrix
     
-def rot_random(indices):
-        pairs = []
-        for (x,y) in combinations(indices, 2):
-            choices = list(permutations((0,x,y)))
-            pairs.append(choices[np.random.choice(len(choices), 1)[0]])
-        return pairs
+
     
+def fill_rotations_2():
+        '''Predefine the rotation matrices
+        for data augmentation of the complexes
+        '''
+        global rotation_matrices
+
+        # The first rotation matrix is just the identity mapping
+        rotation_matrices = [get_rotation_matrix(np.array([1,1,1]), 0)]
+            
+        # 27 different rotations axices, with 100 angles for each
+        # matrix contains 2700 rotations 
+        for (x,y,z) in product([0,-1,1], repeat = 3):
+            for n in range(1, 100):
+                axis = np.array([x,y,z])
+                angle = n * (pi/50)
+                rotation_matrices.append(get_rotation_matrix(axis, angle))   
+                
+def rot_random(dataset, indices):
+    
+    pair = []
+    
+    if dataset == 'validation':
+        return [0]
+    elif dataset == 'training':
+        while True:
+            x = np.random.choice(indices, 20)
+            x = np.append(x, 0)
+            unique_three = set(x)
+        
+            if len(unique_three) >= 4:
+                break
+        
+        for index, elem in enumerate(unique_three):
+            if index == 4:
+                break
+            pair.append(elem)
+        
+    if len(pair) == 0:
+        print("The wrong dataset name, check the name")
+    
+    return pair
+          
 def fill_rotations():
         '''Predefine the rotation matrices
         for data augmentation of the complexes
@@ -60,9 +98,10 @@ def fill_rotations():
                 
 
 if __name__ == "__main__":
-    fill_rotations()
-    el = (rot_random(range(1, len(rotation_matrices))))
-    index = np.random.choice(len(el), 1)
-    print(index)
-    print(el[index[0]])
+    fill_rotations_2()
+    el = (rot_random('training',len(rotation_matrices)))
+    print(el)
+    # index = np.random.choice(len(el), 1)
+    # print(index)
+    # print(el[index[0]])
     

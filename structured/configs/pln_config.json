@@ -10,7 +10,7 @@
         "max_to_keep":5,
         "state_size": [784],
         "num_iter_per_epoch": 10,
-        "conv_channels":[64, 128, 256],
+        "conv_channels":[32, 64, 128, 256],
         "lmbda":0.001,
         "dense_size":[1000,500,200],
         "seed":123,
@@ -19,7 +19,10 @@
         "osize":1,
         "conv_patch":5,
         "pool_patch":2,
-        "checkpoint_dir":"/home/mussaa/Downloads/AkeFiles/Files/project/Sipga_project/model/structured/logs/model_checkpoints",
-        "summary_dir":"/home/mussaa/Downloads/AkeFiles/Files/project/Sipga_project/model/structured/logs/graph_summaries",
-        "model_dir":"/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured/saved_models"
+        "checkpoint_dir":"/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured/logs/model_checkpoints",
+        "summary_dir":"/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured/logs/graph_summaries",
+        "model_dir":"/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured/saved_models",
+        "error_dir"
+
 }
+
