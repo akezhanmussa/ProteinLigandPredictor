@@ -7,6 +7,7 @@ import tensorflow as tf
 import pandas as pd
 import csv
 from math import sqrt
+from datetime import datetime
 
 logger = logging.getLogger(name = "whole_process_log")
 
@@ -67,7 +68,9 @@ class ProtLigTrainer(BaseTrain):
     @staticmethod
     def save_to_csv(train_error, val_error):
         
-        with open(os.path.abspath("errors.csv"), 'w') as csv_file:
+        curent_time = datetime.now().strftime("%d/%m/%Y_%H:%M:%S")
+        
+        with open(os.path.abspath(f"../logs/training_errors/errors_{curent_time}.csv"), 'w') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames = ["train_error", "val_error"])
             writer.writeheader()
             
