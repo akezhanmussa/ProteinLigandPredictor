@@ -68,7 +68,7 @@ class ProtLigTrainer(BaseTrain):
     @staticmethod
     def save_to_csv(train_error, val_error, path):
         
-        curent_time = datetime.now().strftime("%d%m%Y_%H:%M:%S")
+        curent_time = 1 #datetime.now().strftime("%d%m%Y_%H:%M:%S")
         
         with open(f"{path}/errors_{curent_time}.csv", 'w') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames = ["train_error", "val_error"])
