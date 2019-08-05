@@ -1,8 +1,22 @@
 from itertools import combinations, permutations,product
 from math import cos,sin,sqrt,pi
 import numpy as np
+import csv
+from datetime import datetime
 
 rotation_matrices = []
+
+def save_to_csv(train_error, val_error, path):
+        
+        current_time = datetime.now().strftime("%d:%m:%Y_%H:%M")
+        
+        with open(f"{path}/errors_{current_time}.csv", 'w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames = ["train_error", "val_error"])
+            writer.writeheader()
+            
+            for (t_err, v_err) in zip(train_error, val_error):
+                writer.writerow({'train_error':t_err, 'val_error': v_err})
+            
 
 def get_rotation_matrix(axis, angle):
         '''Rotation matrix for any angle 
@@ -98,10 +112,5 @@ def fill_rotations():
                 
 
 if __name__ == "__main__":
-    fill_rotations_2()
-    el = (rot_random('training',len(rotation_matrices)))
-    print(el)
-    # index = np.random.choice(len(el), 1)
-    # print(index)
-    # print(el[index[0]])
+    save_to_csv([1,2,3,4],[1,2,3,4], "/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured/logs/training_errors")
     

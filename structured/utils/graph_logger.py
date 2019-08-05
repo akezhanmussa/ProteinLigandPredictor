@@ -2,15 +2,21 @@ import tensorflow as tf
 import os
 import tensorflow as tf
 from data_loader.data_generator import DataGenerator
+from datetime import datetime
+
+#     curent_time = 1 #datetime.now().strftime("%d%m%Y_%H:%M:%S")
 
 
 class GraphLogger:
     def __init__(self,sess,config):
         self.sess = sess
         self.config = config
-        self.train_summary_writer = tf.summary.FileWriter(os.path.join(self.config.summary_dir, "train"),
+        
+        current_time = datetime.now().strftime("%d:%m:%Y_%H:%M")
+        
+        self.train_summary_writer = tf.summary.FileWriter(os.path.join(self.config.summary_dir, f"event_{current_time}/train"),
                                                           tf.get_default_graph())
-        self.test_summary_writer = tf.summary.FileWriter(os.path.join(self.config.summary_dir, "test"))
+        self.test_summary_writer = tf.summary.FileWriter(os.path.join(self.config.summary_dir, f"event_{current_time}/test"))
 
     # it can summarize scalars and images.
     def summarize(self):
