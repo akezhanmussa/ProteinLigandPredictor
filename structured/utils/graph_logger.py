@@ -12,11 +12,11 @@ class GraphLogger:
         self.sess = sess
         self.config = config
         
-        current_time = datetime.now().strftime("%d:%m:%Y_%H:%M")
+        self.save_time = datetime.now().strftime("%d:%m:%Y_%H:%M")
         
-        self.train_summary_writer = tf.summary.FileWriter(os.path.join(self.config.summary_dir, f"event_{current_time}/train"),
+        self.train_summary_writer = tf.summary.FileWriter(os.path.join(self.config.summary_dir, f"event_{save_time}/train"),
                                                           tf.get_default_graph())
-        self.test_summary_writer = tf.summary.FileWriter(os.path.join(self.config.summary_dir, f"event_{current_time}/test"))
+        self.test_summary_writer = tf.summary.FileWriter(os.path.join(self.config.summary_dir, f"event_{save_time}/test"))
 
     # it can summarize scalars and images.
     def summarize(self):

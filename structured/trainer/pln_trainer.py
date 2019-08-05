@@ -56,7 +56,7 @@ class ProtLigTrainer(BaseTrain):
         
         self.graph_logg.train_summary_writer.close()
         self.graph_logg.test_summary_writer.close()
-        self.save_to_csv(train_rmse_all_error, val_rmse_all_error, self.config.error_dir)
+        self.save_to_csv(train_rmse_all_error, val_rmse_all_error, self.config.error_dir, self.graph_logg.save_time)
         self.sess.close()
         
 
@@ -66,11 +66,9 @@ class ProtLigTrainer(BaseTrain):
     #             self.saver.restore(self.sess, latest_checkpoint)
      
     @staticmethod
-    def save_to_csv(train_error, val_error, path):
-        
-        current_time = datetime.now().strftime("%d:%m:%Y_%H:%M")
-        
-        with open(f"{path}/errors_{current_time}.csv", 'w') as csv_file:
+    def save_to_csv(train_error, val_error, path, time):
+                
+        with open(f"{path}/errors_{time}.csv", 'w') as csv_file:
             writer = csv.DictWriter(csv_file, fieldnames = ["train_error", "val_error"])
             writer.writeheader()
             

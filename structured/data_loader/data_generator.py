@@ -131,11 +131,11 @@ class DataGenerator:
                 x = np.append(x, 0)
                 unique_three = set(x)
             
-                if len(unique_three) >= 4:
+                if len(unique_three) >= 5:
                     break
             
             for index, elem in enumerate(unique_three):
-                if index == 4:
+                if index == 5:
                     break
                 pair.append(elem)
             
