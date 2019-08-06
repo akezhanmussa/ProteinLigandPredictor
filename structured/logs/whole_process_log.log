@@ -1004,3 +1004,15 @@
 08/06/2019:AFTER THE EPOCH 51, the mse_training is 1.5682446412172097 and mse_validation is 1.5958907409321936
 08/06/2019:AFTER THE EPOCH 52, the mse_training is 1.5585908013034633 and mse_validation is 1.5959713357614729
 08/06/2019:AFTER THE EPOCH 53, the mse_training is 1.5562232939016143 and mse_validation is 1.6644504833677203
+08/06/2019:AFTER THE EPOCH 54, the mse_training is 1.5512612557226528 and mse_validation is 1.575717401150025
+08/06/2019:AFTER THE EPOCH 55, the mse_training is 1.548678498092293 and mse_validation is 1.5822530143708549
+08/06/2019:AFTER THE EPOCH 56, the mse_training is 1.5416019404995875 and mse_validation is 1.5734770668501852
+08/06/2019:AFTER THE EPOCH 57, the mse_training is 1.5323886155603634 and mse_validation is 1.5670379812292816
+08/06/2019:AFTER THE EPOCH 58, the mse_training is 1.5303903430680263 and mse_validation is 1.5801395827981268
+08/06/2019:AFTER THE EPOCH 59, the mse_training is 1.5251333830308813 and mse_validation is 1.5611249852390183
+08/06/2019:AFTER THE EPOCH 60, the mse_training is 1.520229283162568 and mse_validation is 1.5708988648007143
+08/06/2019:AFTER THE EPOCH 61, the mse_training is 1.5142644719307214 and mse_validation is 1.5585140634496786
+08/06/2019:AFTER THE EPOCH 62, the mse_training is 1.5072676056177352 and mse_validation is 1.55231290786058
+08/06/2019:AFTER THE EPOCH 63, the mse_training is 1.5031699626813795 and mse_validation is 1.5547258020929084
+08/06/2019:AFTER THE EPOCH 64, the mse_training is 1.4991666251244729 and mse_validation is 1.553962879931168
+08/06/2019:Errors are recorded in errros.csv
