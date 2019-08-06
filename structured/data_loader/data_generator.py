@@ -81,9 +81,9 @@ class DataGenerator:
         # 27 different rotations axices, with 100 angles for each
         # matrix contains 2700 rotations 
         for (x,y,z) in product([0,-1,1], repeat = 3):
-            for n in range(1, 100):
+            for n in range(1, 120):
                 axis = np.array([x,y,z])
-                angle = n * (pi/50)
+                angle = n * (pi/60)
                 self.rotation_matrices.append(self.get_rotation_matrix(axis, angle))
    
         logger.info("The rotations matrices are processed")
