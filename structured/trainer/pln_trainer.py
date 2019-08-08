@@ -26,10 +26,7 @@ class ProtLigTrainer(BaseTrain):
         val_rmse_all_error = []
         
         graph = self.model.graph
-        global_step = graph.get_tensor_by_name("training/global_step:0")
-        
-        
-        prediction = graph.get_tensor_by_name('output/prediction:0')
+                
         self.train_step = graph.get_tensor_by_name('training/train:0')
         self.mse = graph.get_tensor_by_name('training/mse:0')
         self.cost = graph.get_tensor_by_name('training/loss:0')

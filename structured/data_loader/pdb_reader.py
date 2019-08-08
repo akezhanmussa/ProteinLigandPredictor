@@ -25,15 +25,10 @@ class Options():
 
     @staticmethod
     def format_csv(path):
-        
         pd.set_option('max_rows', 5)
-        data = pd.read_csv(path,  )
+        data = pd.read_csv(path,  index_col = 0)
+        
         
     
             
             
-        
-    
-    # def apply_unique_filter(self):
-        
-    #     with open()
