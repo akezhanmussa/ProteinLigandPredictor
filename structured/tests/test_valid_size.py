@@ -32,7 +32,7 @@ class TestValidSize(unittest.TestCase):
                 data_numbers.append(len(g.keys()))
 
         # Compare the sum of all three sets size and the general_set size
-        self.assertEqual(sum(data_numbers[:3]), data_numbers[3])
+        self.assertEqual((data_numbers[2]),195)
                              
     def test_file_existance(self):
         for key in self.data_path.keys():

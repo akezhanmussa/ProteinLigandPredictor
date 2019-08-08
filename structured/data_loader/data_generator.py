@@ -58,7 +58,6 @@ class DataGenerator:
         # benchmark set
         core_set = Options.read_data(os.path.abspath("data_loader/core_pdbbind2013.ids"))
 
-
         if not os.path.isfile(path_training) and not os.path.isfile(path_validation) and not os.path.isfile(path_testing):
             logger.info("the splitting has started")
             with h5py.File(path_training, 'w') as t, \
@@ -85,11 +84,7 @@ class DataGenerator:
                                 else:
                                     ds = v.create_dataset(pdb_id, data = f[pdb_id])
                                     ds.attrs['affinity'] = f[pdb_id].attrs["affinity"]
-                                
-                                
-                                
-                                
-                                
+                                                            
             logger.info("The splitting is done")
         else:
             logger.info("The splitting was done before")
@@ -147,7 +142,7 @@ class DataGenerator:
         
         pair = []
         
-        if dataset == 'validation':
+        if dataset == 'validation' or dataset == 'testing':
             return [0]
         elif dataset == 'training':
             while True:
@@ -221,10 +216,12 @@ class DataGenerator:
                 flatten the array of each molec. char vector to one vector
             '''
             # print(len(self.features['validation']))
-
-            self.charges[dataset] = np.concatenate([charge.flatten() for charge in self.charges[dataset]])
-
-        self.charges_std = {'training':self.charges['training'].std(), 'validation':self.charges['validation'].std()}
+            try:
+                self.charges[dataset] = np.concatenate([charge.flatten() for charge in self.charges[dataset]])
+            except:
+                raise ValueError(f"Empty array was provided for charges in the dataset {dataset}")
+            
+        self.charges_std = {'training':self.charges['training'].std(), 'validation':self.charges['validation'].std(), 'testing':self.charges['testing'].std()}
 
         '''
             indexes where the molcode equals to one and

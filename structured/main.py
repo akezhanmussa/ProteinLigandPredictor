@@ -23,7 +23,7 @@ def main():
     logger = GraphLogger(sess, config)
 
     trainer = ProtLigTrainer(sess, model, data, config, logger)
-    trainer.train()
+    trainer.predict()
     
 
 if __name__ == "__main__":

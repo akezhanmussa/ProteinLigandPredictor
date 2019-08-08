@@ -8,6 +8,7 @@ import pandas as pd
 import csv
 from math import sqrt
 from datetime import datetime
+import math
 
 logger = logging.getLogger(name = "whole_process_log")
 
@@ -57,10 +58,33 @@ class ProtLigTrainer(BaseTrain):
         self.sess.close()
         
 
-    # def predict(self):
-    #     if os.path.isfile('saved_models/'):
-    #             latest_checkpoint = tf.train.latest_checkpoint('saved_models/')
-    #             self.saver.restore(self.sess, latest_checkpoint)
+    def predict(self):
+        y = self.model.graph.get_tensor_by_name('output/prediction:0')
+        x = self.model.graph.get_tensor_by_name('input/data_x:0')
+        t = self.model.graph.get_tensor_by_name('input/data_affinity:0')
+        mse = self.model.graph.get_tensor_by_name('training/mse:0')
+
+        logger.info("The prediction is started")
+        
+        if os.path.isdir(os.path.abspath('saved_models/')):
+                latest_checkpoint = tf.train.latest_checkpoint('saved_models/')
+                self.model.saver.restore(self.sess, latest_checkpoint)
+                
+                print("Shape of the testing", (self.data.dset_sizes['testing']))
+                testing_mse_err = 0
+                
+                for bi, bj in self.data.batches('testing'):
+                    weight = (bj - bi)/self.data.dset_sizes["testing"]
+                    test_err = self.sess.run(mse, feed_dict = {x: self.data.g_batch('testing', range(bi,bj)), t:self.data.affinity['testing'][bi:bj]})
+                    print(f"Overall mse of one ", sqrt(test_err))
+                    testing_mse_err += weight * test_err
+
+                print(f"Overall rmse is ", sqrt(testing_mse_err))
+                
+        else:
+            logger.info("The model did not exist, please upload model meta files")
+                
+        
      
     @staticmethod
     def save_to_csv(train_error, val_error, path, time):
