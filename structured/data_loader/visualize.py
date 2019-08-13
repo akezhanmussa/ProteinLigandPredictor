@@ -24,8 +24,8 @@ class Visualizer():
         for error in errors:
             errors_data[error] = pd.read_csv(f"{errors_dir}/{error}", index_col = 0)
         
-        
         fig, axarr = plt.subplots(2,2, figsize = (8,8))
+        
         
         
         

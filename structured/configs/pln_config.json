@@ -2,7 +2,7 @@
         "datasets": ["training", "validation", "testing"],
         "data_type":["id_s","affinity","coords","features"],
         "data_path": "/home/mussaa/Downloads/AkeFiles/Files/project/Sipga_project/chimera/preprocessed_data",
-        "data_name": "general_set.hdf",
+        "data_name": "general_set.hdf", 
         "batch_size": 2,
         "split_size":0.8,
         "num_epochs":65,
