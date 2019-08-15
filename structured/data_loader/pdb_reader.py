@@ -1,11 +1,14 @@
 import  os 
 import pandas as pd 
+import pybel
 
 
 
 class Options():
+    """Wrapper for reading text files         
+    """
     
-    def __init__(self, path, csv_path):
+    def __init__(self, path):
         self.path = self.path
         self.unique_pdb = self.read_data(path)
         
@@ -28,6 +31,20 @@ class Options():
         pd.set_option('max_rows', 5)
         data = pd.read_csv(path,  index_col = 0)
         
+        
+    # @staticmethod()
+    # def find_central_mass(path):
+    # """This method works only for 
+    # mol2 files, finds the central path 
+    # of the file
+    
+    # param path: the path to the specific complex
+    # """
+    
+    
+    
+
+    
         
     
             

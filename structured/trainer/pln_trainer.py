@@ -18,11 +18,7 @@ class ProtLigTrainer(BaseTrain):
         super().__init__(sess, model, data, config, graph_logg)
     
 
-    def train(self):
-        # tqdm much quickly does the iteration operations
-
-        # loop = tqdm(range(self.config.num_iter_per_epoch))
-        
+    def train(self):       
         train_rmse_all_error = []
         val_rmse_all_error = []
         
@@ -70,13 +66,13 @@ class ProtLigTrainer(BaseTrain):
                 latest_checkpoint = tf.train.latest_checkpoint('saved_models/')
                 self.model.saver.restore(self.sess, latest_checkpoint)
                 
-                print("Shape of the testing", (self.data.dset_sizes['testing']))
+                print("Shape of the training", (self.data.dset_sizes['testing']))
                 testing_mse_err = 0
                 
                 for bi, bj in self.data.batches('testing'):
                     weight = (bj - bi)/self.data.dset_sizes["testing"]
                     test_err = self.sess.run(mse, feed_dict = {x: self.data.g_batch('testing', range(bi,bj)), t:self.data.affinity['testing'][bi:bj]})
-                    print(f"Overall mse of one ", sqrt(test_err))
+                    # print(f"Overall mse of one batch", sqrt(test_err))
                     testing_mse_err += weight * test_err
 
                 print(f"Overall rmse is ", sqrt(testing_mse_err))

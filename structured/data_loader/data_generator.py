@@ -12,7 +12,7 @@ import logging
 from math import pi, sin, cos, sqrt
 from itertools import combinations, product, permutations
 from data_loader.pdb_reader import Options
-
+from collections import defaultdict
 
 np.seterr(invalid = 'raise')
 '''
@@ -53,16 +53,20 @@ class DataGenerator:
         path_training = hdf_path + '/' +  "training.hdf"
         path_validation = hdf_path + '/' + "validation.hdf"
         path_testing = hdf_path + '/' + "testing.hdf"
+        hdf_core_file = hdf_path + '/' + "core_set.hdf"
         
         
         # benchmark set
         core_set = Options.read_data(os.path.abspath("data_loader/core_pdbbind2013.ids"))
+        
+        # to be sure not to add complexes to testing.hdf twice
+        excluded_complexes = defaultdict(lambda: False)
 
-        if not os.path.isfile(path_training) and not os.path.isfile(path_validation) and not os.path.isfile(path_testing):
+        if not os.path.isfile(path_training) or not os.path.isfile(path_validation) or not os.path.isfile(path_testing):
             logger.info("the splitting has started")
             with h5py.File(path_training, 'w') as t, \
                 h5py.File(path_validation, 'w') as v, \
-                    h5py.File(path_testing, 'w') as k:
+                h5py.File(path_testing, 'w') as k:
                         with h5py.File(hdf_file, 'r') as f:
                             shuffled_keys = shuffle(list(f.keys()), random_state = 14)
                             size = len(shuffled_keys)
@@ -72,6 +76,7 @@ class DataGenerator:
                                 if pdb_id in core_set:
                                     ds = k.create_dataset(pdb_id, data = f[pdb_id])
                                     ds.attrs['affinity'] = f[pdb_id].attrs["affinity"]
+                                    excluded_complexes[pdb_id] = True
                                 else:
                                     ds = t.create_dataset(pdb_id, data = f[pdb_id])
                                     ds.attrs['affinity'] = f[pdb_id].attrs["affinity"]
@@ -81,9 +86,16 @@ class DataGenerator:
                                 if pdb_id in core_set:
                                     ds = k.create_dataset(pdb_id, data = f[pdb_id])
                                     ds.attrs['affinity'] = f[pdb_id].attrs["affinity"]
+                                    excluded_complexes[pdb_id] = True
                                 else:
                                     ds = v.create_dataset(pdb_id, data = f[pdb_id])
                                     ds.attrs['affinity'] = f[pdb_id].attrs["affinity"]
+                        
+                        with h5py.File(hdf_core_file, 'r') as m:
+                            for pdb_id in m.keys():
+                                if excluded_complexes[pdb_id] == False:
+                                    ds = k.create_dataset(pdb_id, data = m[pdb_id])
+                                    ds.attrs['affinity'] = m[pdb_id].attrs["affinity"]
                                                             
             logger.info("The splitting is done")
         else:

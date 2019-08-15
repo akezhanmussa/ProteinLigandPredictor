@@ -21,7 +21,6 @@ def main():
     gpu_config.gpu_options.allow_growth = True
     sess = tf.Session(graph = model.graph, config = gpu_config)
     logger = GraphLogger(sess, config)
-
     trainer = ProtLigTrainer(sess, model, data, config, logger)
     trainer.predict()
     
