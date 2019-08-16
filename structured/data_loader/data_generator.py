@@ -53,11 +53,13 @@ class DataGenerator:
         path_training = hdf_path + '/' +  "training.hdf"
         path_validation = hdf_path + '/' + "validation.hdf"
         path_testing = hdf_path + '/' + "testing.hdf"
-        hdf_core_file = hdf_path + '/' + "core_set.hdf"
-        
+        # hdf_core_file = hdf_path + '/' + "core_set.hdf"
+        hdf_core_file = hdf_path + '/' + "rec-log.hdf"
+
         
         # benchmark set
-        core_set = Options.read_data(os.path.abspath("data_loader/core_pdbbind2013.ids"))
+        # core_set = Options.read_data(os.path.abspath("data_loader/core_pdbbind2013.ids"))
+        core_set = []
         
         # to be sure not to add complexes to testing.hdf twice
         excluded_complexes = defaultdict(lambda: False)

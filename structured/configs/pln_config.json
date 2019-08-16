@@ -3,7 +3,7 @@
         "data_type":["id_s","affinity","coords","features"],
         "data_path": "/home/mussaa/Downloads/AkeFiles/Files/project/Sipga_project/chimera/preprocessed_data",
         "data_name": "general_set.hdf", 
-        "batch_size": 10,
+        "batch_size": 100,
         "split_size":0.8,
         "num_epochs":65,
         "learning_rate":1e-5,

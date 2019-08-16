@@ -1,3 +1,5 @@
 /structured/saved_models/*
 __pycache__/
 /logs/*
+/structured/specific_model/*
+

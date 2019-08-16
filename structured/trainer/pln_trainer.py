@@ -72,7 +72,7 @@ class ProtLigTrainer(BaseTrain):
                 for bi, bj in self.data.batches('testing'):
                     weight = (bj - bi)/self.data.dset_sizes["testing"]
                     test_err = self.sess.run(mse, feed_dict = {x: self.data.g_batch('testing', range(bi,bj)), t:self.data.affinity['testing'][bi:bj]})
-                    # print(f"Overall mse of one batch", sqrt(test_err))
+                    print(f"Overall mse of one batch", sqrt(test_err))
                     testing_mse_err += weight * test_err
 
                 print(f"Overall rmse is ", sqrt(testing_mse_err))
