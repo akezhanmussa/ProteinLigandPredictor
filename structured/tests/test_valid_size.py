@@ -33,13 +33,17 @@ class TestValidSize(unittest.TestCase):
 
         # Assert that the overall size of training and validation is less that the size of the general set
         # self.assertLess((data_numbers[0] + data_numbers[1]),data_numbers[3])
+        # self.assertGreater((data_numbers[0] + data_numbers[1]),10000)
+
         self.assertEqual((data_numbers[0] + data_numbers[1]),data_numbers[3])
 
         # Since the testing can contain some elements from the core set list, size can differemt
         # threshold difference is 10, assert that approximately they have the same size
-        # self.assertLess(data_numbers[2], data_numbers[4])
+        # self.assertLess(data_numbers[2], data_numbers[4] + 10)
         self.assertEqual(data_numbers[2], data_numbers[4])
-        
+    
+
+    
     def test_file_existance(self):
         for key in self.data_path.keys():
             self.assertEqual(os.path.isfile(self.data_path[key]), True)

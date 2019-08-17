@@ -9,6 +9,7 @@ import csv
 from math import sqrt
 from datetime import datetime
 import math
+import numpy as np
 
 logger = logging.getLogger(name = "whole_process_log")
 
@@ -62,6 +63,11 @@ class ProtLigTrainer(BaseTrain):
 
         logger.info("The prediction is started")
         
+        predictions = []
+        real_values = []
+        data_codes = []
+    
+        
         if os.path.isdir(os.path.abspath('saved_models/')):
                 latest_checkpoint = tf.train.latest_checkpoint('saved_models/')
                 self.model.saver.restore(self.sess, latest_checkpoint)
@@ -72,14 +78,40 @@ class ProtLigTrainer(BaseTrain):
                 for bi, bj in self.data.batches('testing'):
                     weight = (bj - bi)/self.data.dset_sizes["testing"]
                     test_err = self.sess.run(mse, feed_dict = {x: self.data.g_batch('testing', range(bi,bj)), t:self.data.affinity['testing'][bi:bj]})
-                    print(f"Overall mse of one batch", sqrt(test_err))
+                    prediction = self.sess.run(y, feed_dict= {x: self.data.g_batch('testing', range(bi,bj))})
+                    
+                    predictions.append(prediction[0])
+                    real_values.append(self.data.affinity['testing'][bi:bj][0])
+                    data_codes.append(self.data.id_s['testing'][bi:bj][0])
+                    
                     testing_mse_err += weight * test_err
 
                 print(f"Overall rmse is ", sqrt(testing_mse_err))
                 
+                predictions = np.array(predictions)
+                real_values = np.array(real_values)
+                data_codes = np.array(data_codes)
+                
+                predictions = predictions.reshape((predictions.shape[0],))
+                real_values = real_values.reshape((real_values.shape[0],))
+
+                self.record_predictions(predictions, real_values, data_codes)
+                
         else:
             logger.info("The model did not exist, please upload model meta files")
+        
                 
+    
+    
+    @staticmethod 
+    def record_predictions(predictions, real_values, data_codes):
+        print(predictions.shape)
+        print(real_values.shape)
+        print(data_codes.shape)
+
+        data_set = pd.DataFrame({'real_value':real_values, 'predicted_value':predictions, 'data_code':data_codes}, columns=['real_value', 'predicted_value', 'data_code'])
+        data_set.to_csv(os.path.abspath("model_predictions.csv"))
+        print("Predictions are recorded")
         
      
     @staticmethod
