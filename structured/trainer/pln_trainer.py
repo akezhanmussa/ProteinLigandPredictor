@@ -72,45 +72,58 @@ class ProtLigTrainer(BaseTrain):
                 latest_checkpoint = tf.train.latest_checkpoint('saved_models/')
                 self.model.saver.restore(self.sess, latest_checkpoint)
                 
-                print("Shape of the training", (self.data.dset_sizes['testing']))
-                testing_mse_err = 0
+                print("Shape of the testing set", (self.data.dset_sizes['testing']))
+                # testing_mse_err = 0
                 
                 for bi, bj in self.data.batches('testing'):
                     weight = (bj - bi)/self.data.dset_sizes["testing"]
-                    test_err = self.sess.run(mse, feed_dict = {x: self.data.g_batch('testing', range(bi,bj)), t:self.data.affinity['testing'][bi:bj]})
+                    # test_err = self.sess.run(mse, feed_dict = {x: self.data.g_batch('testing', range(bi,bj)), t:self.data.affinity['testing'][bi:bj]})
                     prediction = self.sess.run(y, feed_dict= {x: self.data.g_batch('testing', range(bi,bj))})
                     
-                    predictions.append(prediction[0])
-                    real_values.append(self.data.affinity['testing'][bi:bj][0])
+                    predictions.append(self.convert_to_mol(prediction[0]))
+                    # real_values.append(self.data.affinity['testing'][bi:bj][0])
                     data_codes.append(self.data.id_s['testing'][bi:bj][0])
                     
-                    testing_mse_err += weight * test_err
+                    # testing_mse_err += weight * test_err
 
-                print(f"Overall rmse is ", sqrt(testing_mse_err))
+                # print(f"Overall rmse is ", sqrt(testing_mse_err))
                 
                 predictions = np.array(predictions)
-                real_values = np.array(real_values)
+                # real_values = np.array(real_values)
                 data_codes = np.array(data_codes)
                 
                 predictions = predictions.reshape((predictions.shape[0],))
-                real_values = real_values.reshape((real_values.shape[0],))
-
-                self.record_predictions(predictions, real_values, data_codes)
+                # real_values = real_values.reshape((real_values.shape[0],))
+                self.record_predictions([(predictions,"predictions"), (real_values,"real_values"), (data_codes,"data_codes")])
                 
         else:
             logger.info("The model did not exist, please upload model meta files")
         
                 
-    
+    @staticmethod
+    def convert_to_mol(affinity):
+        uPower = 10**6
+        converted = 1/math.pow(10, affinity)
+        converted *= uPower
+        return converted
     
     @staticmethod 
-    def record_predictions(predictions, real_values, data_codes):
-        print(predictions.shape)
-        print(real_values.shape)
-        print(data_codes.shape)
-
-        data_set = pd.DataFrame({'real_value':real_values, 'predicted_value':predictions, 'data_code':data_codes}, columns=['real_value', 'predicted_value', 'data_code'])
-        data_set.to_csv(os.path.abspath("model_predictions.csv"))
+    def record_predictions(data, name = "390"):
+        """
+        
+        param data: the list of different data types (e.g: predictions, real_values or data_codes)
+        """
+        
+        input_dict = {}
+        columns = []
+        
+        for data_column in data:
+            if not len(data_column[0]) == 0:
+                input_dict[data_column[1]] = data_column[0] 
+                columns.append(data_column[1])
+                
+        data_set = pd.DataFrame(input_dict, columns=columns)
+        data_set.to_csv(os.path.abspath(f"{name}_predictions.csv"))
         print("Predictions are recorded")
         
      

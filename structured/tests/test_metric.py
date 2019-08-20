@@ -21,9 +21,7 @@ def find_ratio(path_one):
     to the one provided by the pdb bind database
     
     
-    param path_one: the path to pdb_bind db csv
-    param path_two: the path to our protein affinity csv
-    
+    param path_one: the path to pdb_bind db csv    
     """
     
     data_one = pd.read_csv(path_one, error_bad_lines= False)
@@ -40,9 +38,8 @@ def find_ratio(path_one):
 def get_unit(unit):
     global unit_dict
     return unit_dict[unit]
-    
-    
-    
+
+
 def prepare_affinity_data(path):
     path_to_affinity_csv = os.path.abspath("INDEX_affinity.csv")
     

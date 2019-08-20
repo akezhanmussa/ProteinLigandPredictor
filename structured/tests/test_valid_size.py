@@ -17,7 +17,7 @@ class TestValidSize(unittest.TestCase):
         config, _ = get_config(os.path.abspath('../configs/pln_config.json')) 
         self.config = config
         hdf_path = self.config.data_path
-        paths = ["training", "validation","testing","general_set", "rec-log"]
+        paths = ["training", "validation","testing","general_set", "390"]
         self.data_path = {}
         
         for path in paths:

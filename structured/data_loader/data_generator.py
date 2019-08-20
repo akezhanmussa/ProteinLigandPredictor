@@ -38,7 +38,7 @@ class DataGenerator:
         self.fill_rotations()
         
         # filling the 
-        self.fill_data()
+        self.fill_data(affinity_for_testing=False)
         
     def split_data(self, file_name):
         """Splitting the whole data set to train and validation set
@@ -54,7 +54,7 @@ class DataGenerator:
         path_validation = hdf_path + '/' + "validation.hdf"
         path_testing = hdf_path + '/' + "testing.hdf"
         # hdf_core_file = hdf_path + '/' + "core_set.hdf"
-        hdf_core_file = hdf_path + '/' + "rec-log.hdf"
+        hdf_core_file = hdf_path + '/' + "390.hdf"
 
         
         # benchmark set
@@ -97,7 +97,7 @@ class DataGenerator:
                             for pdb_id in m.keys():
                                 if excluded_complexes[pdb_id] == False:
                                     ds = k.create_dataset(pdb_id, data = m[pdb_id])
-                                    ds.attrs['affinity'] = m[pdb_id].attrs["affinity"]
+                                    # ds.attrs['affinity'] = m[pdb_id].attrs["affinity"]
                                                             
             logger.info("The splitting is done")
         else:
@@ -177,7 +177,7 @@ class DataGenerator:
         
         return pair
    
-    def fill_data(self):
+    def fill_data(self, affinity_for_testing = True):
 
         self.id_s = {}
         self.affinity = {}
@@ -207,11 +207,17 @@ class DataGenerator:
                         one_set = f[pdb_id]
                         self.coords[dataset].append(np.dot(one_set[:, :3],self.rotation_matrices[idx]))
                         self.features[dataset].append(one_set[:, 3:])
-                        self.affinity[dataset].append(one_set.attrs['affinity'])
                         self.id_s[dataset].append(pdb_id)
 
+                        if not affinity_for_testing and dataset == "testing":
+                            continue    
+                        else:
+                            self.affinity[dataset].append(one_set.attrs['affinity'])
+
             self.id_s[dataset] = np.array(self.id_s[dataset])
-            self.affinity[dataset] = np.reshape(self.affinity[dataset], (-1, 1))        
+            
+            if affinity_for_testing:
+                self.affinity[dataset] = np.reshape(self.affinity[dataset], (-1, 1))        
 
             
             for feature_data in self.features[dataset]:
@@ -244,7 +250,7 @@ class DataGenerator:
         # temp_batch = g_batch(indices = range(50))
         # index_one = [[i[0]] for i in np.where(temp_batch[..., features_map['molcode']] == 1.0)]
 
-        self.dset_sizes = {dataset: len(self.affinity[dataset]) for dataset in self.config.datasets}
+        self.dset_sizes = {dataset: len(self.id_s[dataset]) for dataset in self.config.datasets}
         self.num_batches = {dataset: (size//self.config.batch_size) for dataset, size in self.dset_sizes.items()}
 
         logger.info("the filling is done")
