@@ -14,15 +14,9 @@ from itertools import combinations, product, permutations
 from data_loader.pdb_reader import Options
 from collections import defaultdict
 
+# to make numpy be able to raise the error if in case of invalid error
 np.seterr(invalid = 'raise')
-'''
-    Attributes of config:
-        datasets
-        data_type
-        data_path
-        data_name
-        batch_size
-'''
+
 
 global_index = 0
 
@@ -32,15 +26,17 @@ class DataGenerator:
     def __init__(self, config):
         self.config = config
         
-        self.split_data(self.config.data_name)
+        # splitting the data by folders
+        self.split_data(self.config.data_name, affinity_for_testing= False)
         
         # save the rotaion matrices
         self.fill_rotations()
         
-        # filling the 
+        # filling the data of lists from hdf file
         self.fill_data(affinity_for_testing=False)
+    
         
-    def split_data(self, file_name):
+    def split_data(self, file_name, affinity_for_testing = False):
         """Splitting the whole data set to train and validation set
         
         Split the data using the following parameters.
@@ -53,14 +49,16 @@ class DataGenerator:
         path_training = hdf_path + '/' +  "training.hdf"
         path_validation = hdf_path + '/' + "validation.hdf"
         path_testing = hdf_path + '/' + "testing.hdf"
-        # hdf_core_file = hdf_path + '/' + "core_set.hdf"
-        hdf_core_file = hdf_path + '/' + "390.hdf"
-
+        
+        test_name = self.config.specific_test_name
+        hdf_core_file = f"{hdf_path}/{test_name}"
         
         # benchmark set
-        # core_set = Options.read_data(os.path.abspath("data_loader/core_pdbbind2013.ids"))
-        core_set = []
-        
+        if self.config.specific_test_name == "core_set":
+            core_set = Options.read_data(os.path.abspath("data_loader/core_pdbbind2013.ids"))
+        else:
+            core_set = []
+            
         # to be sure not to add complexes to testing.hdf twice
         excluded_complexes = defaultdict(lambda: False)
 
@@ -97,7 +95,9 @@ class DataGenerator:
                             for pdb_id in m.keys():
                                 if excluded_complexes[pdb_id] == False:
                                     ds = k.create_dataset(pdb_id, data = m[pdb_id])
-                                    # ds.attrs['affinity'] = m[pdb_id].attrs["affinity"]
+                                    
+                                    if affinity_for_testing:
+                                        ds.attrs['affinity'] = m[pdb_id].attrs["affinity"]
                                                             
             logger.info("The splitting is done")
         else:
@@ -176,7 +176,7 @@ class DataGenerator:
             logger.info("The wrong dataset name, check the name")
         
         return pair
-   
+    
     def fill_data(self, affinity_for_testing = True):
 
         self.id_s = {}
@@ -208,18 +208,15 @@ class DataGenerator:
                         self.coords[dataset].append(np.dot(one_set[:, :3],self.rotation_matrices[idx]))
                         self.features[dataset].append(one_set[:, 3:])
                         self.id_s[dataset].append(pdb_id)
-
-                        if not affinity_for_testing and dataset == "testing":
-                            continue    
-                        else:
+                        
+                        if affinity_for_testing and not dataset == 'testing':
                             self.affinity[dataset].append(one_set.attrs['affinity'])
 
             self.id_s[dataset] = np.array(self.id_s[dataset])
             
-            if affinity_for_testing:
+            if affinity_for_testing or not dataset == 'testing':
                 self.affinity[dataset] = np.reshape(self.affinity[dataset], (-1, 1))        
 
-            
             for feature_data in self.features[dataset]:
                                 
                 '''
@@ -230,26 +227,18 @@ class DataGenerator:
                     extracts the whole specific column by specifying 
                     the col. index
                 '''
+                          
                 self.charges[dataset].append(feature_data[..., self.features_map["partialcharge"]])
-            
+
             '''
                 flatten the array of each molec. char vector to one vector
             '''
-            # print(len(self.features['validation']))
             try:
                 self.charges[dataset] = np.concatenate([charge.flatten() for charge in self.charges[dataset]])
             except:
                 raise ValueError(f"Empty array was provided for charges in the dataset {dataset}")
             
         self.charges_std = {'training':self.charges['training'].std(), 'validation':self.charges['validation'].std(), 'testing':self.charges['testing'].std()}
-
-        '''
-            indexes where the molcode equals to one and
-            minus one
-        '''
-        # temp_batch = g_batch(indices = range(50))
-        # index_one = [[i[0]] for i in np.where(temp_batch[..., features_map['molcode']] == 1.0)]
-
         self.dset_sizes = {dataset: len(self.id_s[dataset]) for dataset in self.config.datasets}
         self.num_batches = {dataset: (size//self.config.batch_size) for dataset, size in self.dset_sizes.items()}
 

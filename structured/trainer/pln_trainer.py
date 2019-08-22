@@ -69,33 +69,32 @@ class ProtLigTrainer(BaseTrain):
     
         
         if os.path.isdir(os.path.abspath('saved_models/')):
-                latest_checkpoint = tf.train.latest_checkpoint('saved_models/')
-                self.model.saver.restore(self.sess, latest_checkpoint)
+            latest_checkpoint = tf.train.latest_checkpoint('saved_models/')
+            self.model.saver.restore(self.sess, latest_checkpoint)
+            
+            print("Shape of the testing set", (self.data.dset_sizes['testing']))
+            # testing_mse_err = 0
+            
+            for bi, bj in self.data.batches('testing'):
+                weight = (bj - bi)/self.data.dset_sizes["testing"]
+                # test_err = self.sess.run(mse, feed_dict = {x: self.data.g_batch('testing', range(bi,bj)), t:self.data.affinity['testing'][bi:bj]})
+                prediction = self.sess.run(y, feed_dict= {x: self.data.g_batch('testing', range(bi,bj))})
                 
-                print("Shape of the testing set", (self.data.dset_sizes['testing']))
-                # testing_mse_err = 0
+                predictions.append(self.convert_to_mol(prediction[0]))
+                # real_values.append(self.data.affinity['testing'][bi:bj][0])
+                data_codes.append(self.data.id_s['testing'][bi:bj][0])
                 
-                for bi, bj in self.data.batches('testing'):
-                    weight = (bj - bi)/self.data.dset_sizes["testing"]
-                    # test_err = self.sess.run(mse, feed_dict = {x: self.data.g_batch('testing', range(bi,bj)), t:self.data.affinity['testing'][bi:bj]})
-                    prediction = self.sess.run(y, feed_dict= {x: self.data.g_batch('testing', range(bi,bj))})
-                    
-                    predictions.append(self.convert_to_mol(prediction[0]))
-                    # real_values.append(self.data.affinity['testing'][bi:bj][0])
-                    data_codes.append(self.data.id_s['testing'][bi:bj][0])
-                    
-                    # testing_mse_err += weight * test_err
+                # testing_mse_err += weight * test_err
 
-                # print(f"Overall rmse is ", sqrt(testing_mse_err))
-                
-                predictions = np.array(predictions)
-                # real_values = np.array(real_values)
-                data_codes = np.array(data_codes)
-                
-                predictions = predictions.reshape((predictions.shape[0],))
-                # real_values = real_values.reshape((real_values.shape[0],))
-                self.record_predictions([(predictions,"predictions"), (real_values,"real_values"), (data_codes,"data_codes")])
-                
+            # print(f"Overall rmse is ", sqrt(testing_mse_err))
+            
+            predictions = np.array(predictions)
+            # real_values = np.array(real_values)
+            data_codes = np.array(data_codes)
+            
+            predictions = predictions.reshape((predictions.shape[0],))
+            # real_values = real_values.reshape((real_values.shape[0],))
+            self.record_predictions([(predictions,"predictions"), (real_values,"real_values"), (data_codes,"data_codes")], name = self.config.specific_test_name)
         else:
             logger.info("The model did not exist, please upload model meta files")
         
@@ -109,7 +108,7 @@ class ProtLigTrainer(BaseTrain):
     
     @staticmethod 
     def record_predictions(data, name = "390"):
-        """
+        """Saves the dict of predictions as a csv file 
         
         param data: the list of different data types (e.g: predictions, real_values or data_codes)
         """

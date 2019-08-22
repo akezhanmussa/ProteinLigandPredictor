@@ -26,21 +26,7 @@ class Options():
         return unique_pdb
 
 
-    @staticmethod
-    def format_csv(path):
-        pd.set_option('max_rows', 5)
-        data = pd.read_csv(path,  index_col = 0)
-        
-        
-    # @staticmethod()
-    # def find_central_mass(path):
-    # """This method works only for 
-    # mol2 files, finds the central path 
-    # of the file
-    
-    # param path: the path to the specific complex
-    # """
-    
+
     
     
 
