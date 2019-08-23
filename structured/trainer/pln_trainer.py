@@ -122,7 +122,8 @@ class ProtLigTrainer(BaseTrain):
                 columns.append(data_column[1])
                 
         data_set = pd.DataFrame(input_dict, columns=columns)
-        data_set.to_csv(os.path.abspath(f"{name}_predictions.csv"))
+        predictions_folder = "predictions_on_test_cases"
+        data_set.to_csv(os.path.abspath(f"{predictions_folder}/{name}_predictions.csv"))
         print("Predictions are recorded")
         
      
