@@ -1,5 +1,6 @@
 /structured/saved_models/*
 /structured/predictions_on_test_cases/*
+/structured/.vscode/*
 __pycache__/
-/logs/*
+/structured/logs/*
 /structured/specific_model/*

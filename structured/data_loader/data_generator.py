@@ -36,72 +36,87 @@ class DataGenerator:
         self.fill_data(affinity_for_testing=False)
     
         
-    def split_data(self, file_name, affinity_for_testing = False):
-        """Splitting the whole data set to train and validation set
+    def split_data(self, file_name, affinity_for_testing = False, make_split_for_training_validation = True):
+        """Splitting the whole data set to train and validation sets
         
         Split the data using the following parameters.
         
-        :param file_name: The name of the data set
+        param file_name: The name of the data set
+        param affinity_for_testing: whether to include the affinity data for testing folder
+        param make_split_for_training_validation: whether to make split for training and validation cases
         """        
+        test_name = self.config.specific_test_name
         
+        # path to benchmark core set, but could be any other test cases
+        hdf_core_file = f"{hdf_path}/{test_name}"
         hdf_path = self.config.data_path
         hdf_file = hdf_path + '/' + file_name
         path_training = hdf_path + '/' +  "training.hdf"
         path_validation = hdf_path + '/' + "validation.hdf"
         path_testing = hdf_path + '/' + "testing.hdf"
         
-        test_name = self.config.specific_test_name
-        hdf_core_file = f"{hdf_path}/{test_name}"
-        
-        # benchmark set
-        if self.config.specific_test_name == "core_set":
-            core_set = Options.read_data(os.path.abspath("data_loader/core_pdbbind2013.ids"))
+        # since testing folder may vary, training and validation files can be untouched 
+        if not make_split_for_training_validation:
+            with h5py.File(path_testing, 'w') as k:
+                with h5py.File(hdf_core_file, 'r') as m:
+                    for pdb_id in m.keys():
+                        ds = k.create_dataset(pdb_id, data = m[pdb_id])
+                                        
+                        if affinity_for_testing:
+                            ds.attrs['affinity'] = m[pdb_id].attrs["affinity"]
+                            
+            logger.info("The splitting is done only for testing case")
         else:
-            core_set = []
             
-        # to be sure not to add complexes to testing.hdf twice
-        excluded_complexes = defaultdict(lambda: False)
+            # benchmark set
+            if self.config.specific_test_name == "core_set":
+                core_set = Options.read_data(os.path.abspath("data_loader/core_pdbbind2013.ids"))
+            else:
+                core_set = []
+                
+            # to be sure not to add complexes to testing.hdf twice
+            excluded_complexes = defaultdict(lambda: False)
 
-        if not os.path.isfile(path_training) or not os.path.isfile(path_validation) or not os.path.isfile(path_testing):
-            logger.info("the splitting has started")
-            with h5py.File(path_training, 'w') as t, \
-                h5py.File(path_validation, 'w') as v, \
-                h5py.File(path_testing, 'w') as k:
-                        with h5py.File(hdf_file, 'r') as f:
-                            shuffled_keys = shuffle(list(f.keys()), random_state = 14)
-                            size = len(shuffled_keys)
-                            
-                            for pdb_id in shuffled_keys[:int(size*self.config.split_size)]:
+            if not os.path.isfile(path_training) or not os.path.isfile(path_validation) or not os.path.isfile(path_testing):
+                logger.info("the splitting has started")
+                with h5py.File(path_training, 'w') as t, \
+                    h5py.File(path_validation, 'w') as v, \
+                    h5py.File(path_testing, 'w') as k:
+                            with h5py.File(hdf_file, 'r') as f:
+                                shuffled_keys = shuffle(list(f.keys()), random_state = 14)
+                                size = len(shuffled_keys)
                                 
-                                if pdb_id in core_set:
-                                    ds = k.create_dataset(pdb_id, data = f[pdb_id])
-                                    ds.attrs['affinity'] = f[pdb_id].attrs["affinity"]
-                                    excluded_complexes[pdb_id] = True
-                                else:
-                                    ds = t.create_dataset(pdb_id, data = f[pdb_id])
-                                    ds.attrs['affinity'] = f[pdb_id].attrs["affinity"]
-                            
-                            for pdb_id in shuffled_keys[int(size*self.config.split_size):]:
-                                
-                                if pdb_id in core_set:
-                                    ds = k.create_dataset(pdb_id, data = f[pdb_id])
-                                    ds.attrs['affinity'] = f[pdb_id].attrs["affinity"]
-                                    excluded_complexes[pdb_id] = True
-                                else:
-                                    ds = v.create_dataset(pdb_id, data = f[pdb_id])
-                                    ds.attrs['affinity'] = f[pdb_id].attrs["affinity"]
-                        
-                        with h5py.File(hdf_core_file, 'r') as m:
-                            for pdb_id in m.keys():
-                                if excluded_complexes[pdb_id] == False:
-                                    ds = k.create_dataset(pdb_id, data = m[pdb_id])
+                                for pdb_id in shuffled_keys[:int(size*self.config.split_size)]:
                                     
-                                    if affinity_for_testing:
-                                        ds.attrs['affinity'] = m[pdb_id].attrs["affinity"]
-                                                            
-            logger.info("The splitting is done")
-        else:
-            logger.info("The splitting was done before")
+                                    if pdb_id in core_set:
+                                        ds = k.create_dataset(pdb_id, data = f[pdb_id])
+                                        ds.attrs['affinity'] = f[pdb_id].attrs["affinity"]
+                                        excluded_complexes[pdb_id] = True
+                                    else:
+                                        ds = t.create_dataset(pdb_id, data = f[pdb_id])
+                                        ds.attrs['affinity'] = f[pdb_id].attrs["affinity"]
+                                
+                                for pdb_id in shuffled_keys[int(size*self.config.split_size):]:
+                                    
+                                    if pdb_id in core_set:
+                                        ds = k.create_dataset(pdb_id, data = f[pdb_id])
+                                        ds.attrs['affinity'] = f[pdb_id].attrs["affinity"]
+                                        excluded_complexes[pdb_id] = True
+                                    else:
+                                        ds = v.create_dataset(pdb_id, data = f[pdb_id])
+                                        ds.attrs['affinity'] = f[pdb_id].attrs["affinity"]
+                            
+                            with h5py.File(hdf_core_file, 'r') as m:
+                                for pdb_id in m.keys():
+                                    if excluded_complexes[pdb_id] == False:
+                                        ds = k.create_dataset(pdb_id, data = m[pdb_id])
+                                        
+                                        if affinity_for_testing:
+                                            ds.attrs['affinity'] = m[pdb_id].attrs["affinity"]
+                                                                
+                logger.info("The splitting is done")
+            else:
+                logger.info("The splitting was done before")
     
     def fill_rotations(self):
         '''Predefine the rotation matrices
@@ -123,11 +138,10 @@ class DataGenerator:
                 
     @staticmethod
     def get_rotation_matrix(axis, angle):
+        '''Custom Rotational matrix
         
-        '''Rotation matrix for any angle 
-        around any axis
-        
-        angle should be in range from [-1, 1] 
+        param angle: angle of rotation, should be in range from [-1, 1] 
+        param axis: axis of rotation, vector with dimension of three
         '''
         
         # normalize the units of the rotation axis
@@ -152,7 +166,15 @@ class DataGenerator:
         return rotation_matrix
     
     @staticmethod
-    def rot_random(dataset, indices):
+    def rot_random(dataset, indices, rotation_number = 6):
+        '''Return pair of random rotations 
+        
+        param dataset: type of dataset
+        param indices: the indices of rotational matrices
+        param rotation_number: the number of rotations in the pair
+        
+        return pair: the list of rotational indices
+        '''
         
         pair = []
         
@@ -160,24 +182,31 @@ class DataGenerator:
             return [0]
         elif dataset == 'training':
             while True:
+                # Amid 20 random indices, append to pair till it will have six unique rotaions
                 x = np.random.choice(indices, 20)
+                # Zero index rotation indicates identity rotation
                 x = np.append(x, 0)
                 unique_three = set(x)
             
-                if len(unique_three) >= 6:
+                if len(unique_three) >= rotation_number:
                     break
             
             for index, elem in enumerate(unique_three):
-                if index == 6:
+                if index == rotation_number6:
                     break
                 pair.append(elem)
             
         if len(pair) == 0:
-            logger.info("The wrong dataset name, check the name")
+            raise new ValueError("The wrong dataset name, check the name")
         
         return pair
     
-    def fill_data(self, affinity_for_testing = True):
+    def fill_data(self, affinity_for_testing = True, consider_test_case_only = False):
+        '''Filling the data from .hdf files
+        
+        param affinity_for_testing: whether to include the affinity data for testing folder
+        param consider_test_case_only: whether to fill only the test case data 
+        '''
 
         self.id_s = {}
         self.affinity = {}
@@ -193,6 +222,10 @@ class DataGenerator:
         
         features_set = self.get_features_names()
         self.features_map = {name:i for i,name in enumerate(features_set)}
+        
+        # Shrink the datasets if test case is only considered
+        if consider_test_case_only:
+            self.config.datasets = ['testing']
         
         for dataset in self.config.datasets:
         
@@ -245,6 +278,10 @@ class DataGenerator:
         logger.info("the filling is done")
     
     def batches(self, set_name):
+        '''Yields the indices for batches
+        
+        param set_name: name for dataset
+        '''
         for b in range(self.num_batches[set_name]):
             bi = b * self.config.batch_size
             bj = (b + 1)*self.config.batch_size
@@ -253,8 +290,15 @@ class DataGenerator:
             yield bi, bj
 
     
-    
     def g_batch(self, dataset = 'training', indices = range(0,10), rotation = None):
+        '''Getting the data of specific range and converting them to 3d grids
+        
+        param dataset: type of dataset
+        param indices: the batch range
+        param rotation: the rotation matrix for changing the coordinates of complexes
+        
+        return x: the set of 3d grid complexes
+        '''
         x = []
         for index in indices:
             '''
@@ -273,6 +317,9 @@ class DataGenerator:
     
     @staticmethod
     def get_features_names():
+        '''Getting the names of features and 
+        the order how they were preserved before
+        '''
         atom_classes = Constants.atom_classes.value
         '''
             the order of features in the data set
@@ -295,6 +342,11 @@ class DataGenerator:
     def to_box(coords, features, grid_resolution = 1.0, max_dist = 10.0):
         ''' Representing the coordinates as 3d grid with 21 Angstons diameter
             for one molecular complex
+            
+            param coords: the coordinates of the complex
+            param features: the features of the complex
+            param grid_resolution: resolution of the grid
+            param max_dist: the half of the grid width
         '''
 
         coords_num = len(coords)
