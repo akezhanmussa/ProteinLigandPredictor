@@ -23,6 +23,12 @@ global_index = 0
 logger = logging.getLogger(name = "whole_process_log")
 
 class DataGenerator:
+    """The class representation of the data generation process. It is responsible for data formatting and data loading of protein-ligand complexes
+    
+    :param config: A configuration of the project
+    :type config: JSON 
+    """
+    
     def __init__(self, config):
         self.config = config
         
@@ -37,13 +43,12 @@ class DataGenerator:
     
         
     def split_data(self, file_name, affinity_for_testing = False):
-        """Splitting the whole data set to train and validation sets
-        
-        Split the data using the following parameters.
-        
-        param file_name: The name of the data set
-        param affinity_for_testing: whether to include the affinity data for testing folder
-        param make_split_for_training_validation: whether to make split for training and validation cases
+        """Splits the whole data to different data sets
+            
+        :param file_name: The name of the data set
+        :type file_name: str
+        :param affinity_for_testing: whether to include the affinity data for testing folder
+        :type affinity_for_testing: bool, optional
         """        
         test_name = self.config.specific_test_name
         
@@ -96,17 +101,9 @@ class DataGenerator:
                                         ds.attrs['affinity'] = f[pdb_id].attrs["affinity"]
                                         
                             self.define_test_case_hdf(hdf_test_file = hdf_core_file, 
-                                                    excluded_complexes = excluded_complexes, 
                                                     hdf_test_writer = k, 
-                                                    affinity_for_testing = affinity_for_testing)
-                            
-                            # with h5py.File(hdf_core_file, 'r') as m:
-                            #     for pdb_id in m.keys():
-                            #         if excluded_complexes[pdb_id] == False:
-                            #             ds = k.create_dataset(pdb_id, data = m[pdb_id])
-                                        
-                            #             if affinity_for_testing:
-                            #                 ds.attrs['affinity'] = m[pdb_id].attrs["affinity"]
+                                                    affinity_for_testing = affinity_for_testing,
+                                                    excluded_complexes = excluded_complexes)
                                                                 
                 logger.info("The splitting is done")
             else:
@@ -123,7 +120,17 @@ class DataGenerator:
             logger.info("The splitting is done")
 
     @staticmethod
-    def define_test_case_hdf(hdf_test_file, excluded_complexes, hdf_test_writer, affinity_for_testing):
+    def define_test_case_hdf(hdf_test_file, hdf_test_writer, affinity_for_testing, excluded_complexes):
+        """Defines the particular test case
+        
+        :param hdf_test_file: the path to the considered test case file 
+        :type hdf_test_file: str
+        :param affinity_for_testing: True if the affinity has to be extracted, False otherwise (usually, if the model has to be tested for generating affinity, the experimental affinity is not important for testing)
+        :type affinity_for_testing: bool
+        :param excluded_complexes: the complexes that were excluded 
+        :type excluded_complexes: dict, defaultdict as optional
+        """
+        
         
         with h5py.File(hdf_test_file, 'r') as m:
             for pdb_id in m.keys():
@@ -134,9 +141,7 @@ class DataGenerator:
                     ds.attrs['affinity'] = m[pdb_id].attrs["affinity"]
     
     def fill_rotations(self):
-        '''Predefine the rotation matrices
-        for data augmentation of the complexes
-        '''
+        """Predefines the rotation matrices for data augmentation of the complexes"""
         
         # The first rotation matrix is just the identity mapping
         self.rotation_matrices = [self.get_rotation_matrix(np.array([1,1,1]), 0)]
@@ -153,11 +158,15 @@ class DataGenerator:
                 
     @staticmethod
     def get_rotation_matrix(axis, angle):
-        '''Custom Rotational matrix
+        """Gets a custom Rotational matrix
         
-        param angle: angle of rotation, should be in range from [-1, 1] 
-        param axis: axis of rotation, vector with dimension of three
-        '''
+        :param angle: angle of rotation, should be in range from [-1, 1] 
+        :type angle: float
+        :param axis: axis of rotation, vector with dimension of three
+        :type axis: numpy.ndarray
+        :return rotation_matrix: the custom rotational matrix
+        :rtype rotation_matrix: numpy.ndarray
+        """
         
         # normalize the units of the rotation axis
         
@@ -182,14 +191,17 @@ class DataGenerator:
     
     @staticmethod
     def rot_random(dataset, indices, rotation_number = 6):
-        '''Return pair of random rotations 
+        """Returns a list of random rotations 
         
-        param dataset: type of dataset
-        param indices: the indices of rotational matrices
-        param rotation_number: the number of rotations in the pair
-        
-        return pair: the list of rotational indices
-        '''
+        :param dataset: type of dataset
+        :type dataset: str
+        :param indices: the indices of rotational matrices
+        :type indices: list
+        :param rotation_number: the number of rotations in the pair
+        :type rotation_number: int
+        :return pair: the list of rotational indices
+        :rtype: list
+        """
         
         pair = []
         
@@ -217,11 +229,11 @@ class DataGenerator:
         return pair
     
     def fill_data(self, affinity_for_testing = True):
-        '''Filling the data from .hdf files
+        """Fills the dictionaries of attributes (affinity, coords, features, charges) from preprocessed .hdf file
         
-        param affinity_for_testing: whether to include the affinity data for testing folder
-        param consider_test_case_only: whether to fill only the test case data 
-        '''
+        :param affinity_for_testing: True if the affinity has to be extracted, False otherwise (usually, if the model has to be tested for generating affinity, the experimental affinity is not important for testing)
+        :type affinity_for_testing: bool
+        """
 
         self.id_s = {}
         self.affinity = {}
@@ -239,7 +251,7 @@ class DataGenerator:
         features_set = self.get_features_names()
         self.features_map = {name:i for i,name in enumerate(features_set)}
         
-        # Shrink the datasets if test case is only considered
+        # Shrinks the datasets if test case is only considered
         if self.config.testing_mode:
             self.config.datasets = ['testing']
         
@@ -268,20 +280,20 @@ class DataGenerator:
 
             for feature_data in self.features[dataset]:
                                 
-                '''
+                """
                     Extraction of charges of each molecule, 
                     just pointing the column number
 
                     notation -> ..., columnIndex
                     extracts the whole specific column by specifying 
                     the col. index
-                '''
+                """
                           
                 self.charges[dataset].append(feature_data[..., self.features_map["partialcharge"]])
 
-            '''
-                flatten the array of each molec. char vector to one vector
-            '''
+            
+            # flatten the array of each molec. char vector to one vector
+            
             try:
                 self.charges[dataset] = np.concatenate([charge.flatten() for charge in self.charges[dataset]])
             except:
@@ -289,17 +301,20 @@ class DataGenerator:
             
             self.charges_std[dataset] = self.charges[dataset].std()
             
-        # self.charges_std = {'training':self.charges['training'].std(), 'validation':self.charges['validation'].std(), 'testing':self.charges['testing'].std()}
         self.dset_sizes = {dataset: len(self.id_s[dataset]) for dataset in self.config.datasets}
         self.num_batches = {dataset: (size//self.config.batch_size) for dataset, size in self.dset_sizes.items()}
 
         logger.info("the filling is done")
     
     def batches(self, set_name):
-        '''Yields the indices for batches
+        """Yields the indices for batches
         
-        param set_name: name for dataset
-        '''
+        :param set_name: name for dataset
+        :type: str
+        :return: the start and end of the batch
+        :rtype: int, int
+        """
+        
         for b in range(self.num_batches[set_name]):
             bi = b * self.config.batch_size
             bj = (b + 1)*self.config.batch_size
@@ -309,21 +324,22 @@ class DataGenerator:
 
     
     def g_batch(self, dataset = 'training', indices = range(0,10), rotation = None):
-        '''Getting the data of specific range and converting them to 3d grids
+        '''Converts the specific range of dataset's complexes to 3d grids
         
-        param dataset: type of dataset
-        param indices: the batch range
-        param rotation: the rotation matrix for changing the coordinates of complexes
-        
-        return x: the set of 3d grid complexes
+        :param dataset: type of dataset
+        :type dataset: str
+        :param indices: the batch range
+        :type indices: list
+        :param rotation: the rotation matrix for changing the coordinates of complexes
+        :type rotation: numpy.ndarray
+        :return x: the list of 3d grid complexes
+        :rtype x: list
         '''
+        
+        
         x = []
         for index in indices:
-            '''
-                coordinates and features of one 
-                complex
-            '''
-
+            # coordinates and features of one complex
             coords_index = self.coords[dataset][index] if rotation is None else np.dot(self.coords[dataset][index], rotation)
             
             feature_index = self.features[dataset][index]
@@ -335,18 +351,16 @@ class DataGenerator:
     
     @staticmethod
     def get_features_names():
-        '''Getting the names of features and 
-        the order how they were preserved before
+        '''Gets the names of features and the order how they were preserved before
+        
+        :return features: the order of features in the data set
+        :rtype features: list
         '''
         atom_classes = Constants.atom_classes.value
-        '''
-            the order of features in the data set
-        '''
+ 
         features = []
         
-        '''
-            added the atom names 
-        '''
+        # added the atom names
         for index, (atom_num, name) in enumerate(atom_classes):
             features.append(name)
 
@@ -361,10 +375,16 @@ class DataGenerator:
         ''' Representing the coordinates as 3d grid with 21 Angstons diameter
             for one molecular complex
             
-            param coords: the coordinates of the complex
-            param features: the features of the complex
-            param grid_resolution: resolution of the grid
-            param max_dist: the half of the grid width
+        :param coords: the coordinates of the complex
+        :type coords: numpy.ndarray
+        :param features: the features of the complex
+        :type features: list
+        :param grid_resolution: resolution of the grid
+        :type grid_resolution: float
+        :param max_dist: the half of the grid width
+        :type max_dist: float, optional
+        :return grid: the 3d representation of the complex
+        :rtype: numpy.ndarray
         '''
 
         coords_num = len(coords)
@@ -374,10 +394,8 @@ class DataGenerator:
         box_size = ceil(2*max_dist + 1)
         box_width = box_size / 2
 
-        # '''
-        #     change coordinates of atoms to be relative to the center of the box
-        # '''
-
+        
+        # change coordinates of atoms to be relative to the center of the box
         grid_coords = (coords) / grid_resolution 
 
 

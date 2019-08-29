@@ -5,7 +5,10 @@ import pybel
 
 
 class Options():
-    """Wrapper for reading text files         
+    """Wrapper for reading .txt files         
+    
+    :param path: the path of the txt file to wrap 
+    :type path: str
     """
     
     def __init__(self, path):
@@ -15,6 +18,13 @@ class Options():
     
     @staticmethod
     def read_data(path):
+        """Readin the data from .txt file
+        
+        :param path: the path to a file of pdb codes
+        :type path: str
+        :return: the unique set of pdb codes
+        :rtype: set of str
+        """
         
         unique_pdb = set()
         current_path = os.path.abspath(path)

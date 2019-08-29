@@ -5,3 +5,6 @@ __pycache__/
 /structured/logs/*
 /structured/specific_model/*
 /structured/utils/visualization/images/*
+/structured/*.csv
+/structured/logs
+/structured/utils/processing

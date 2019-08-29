@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "/home/mussaa/anaconda3/envs/tf_gpu/bin/python"
+    "python.pythonPath": "/home/mussaa/anaconda3/envs/tf_gpu/bin/python",
+    "git.ignoreLimitWarning": true
 }

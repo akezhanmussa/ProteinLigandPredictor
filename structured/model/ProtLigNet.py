@@ -5,17 +5,16 @@ import os
 from utils.custom_logger import Logger
 
 
-"""
-    The class implementation 
-    of the ProtLigNet model
-
-    
-"""
-
+# the global object logger
 logger = Logger(path = os.path.abspath('logs/'), name = "whole_process_log")
 
 
 class ProtLigNet(BaseModel):
+    """The class representation of the project model. It defines the computation graph trough which training process goes. It is extended from BaseModel
+    
+    :param config: A configuration of the project 
+    :type config: JSON
+    """
 
     def __init__(self, config):
         super().__init__(config)
@@ -23,6 +22,7 @@ class ProtLigNet(BaseModel):
         self.init_saver()
         
     def build_model(self):
+        """Builds the computational graph of the model and saves the graph as an object's instance attribute"""
     
         graph = tf.Graph()
 
@@ -81,9 +81,14 @@ class ProtLigNet(BaseModel):
                 train = optimizer.minimize(loss, global_step = global_step, name = 'train')
         
         self.graph = graph
-        # return graph 
     
     def find_model(self, path_model):
+        """Finds the model in case if it was defined before, otherwise generates a new one
+        
+        :param path_model: the path to the model
+        :type path_model: str
+        """
+        
         if not os.path.isfile(path_model):
             self.build_model()
             logger.info("The model was created from scratch")
@@ -94,10 +99,24 @@ class ProtLigNet(BaseModel):
             
             
     def init_saver(self):
+        """Initializes the saver for weights"""
+        
         with self.graph.as_default():
             self.saver = tf.train.Saver(max_to_keep = self.config.max_to_keep)
 
     def feedforward(self, input, neurons_number, prob = 0.5):
+        """Propogates through the dense layers
+        
+        :param input: the flattened weigths after the convolution 
+        :type input: tf.TensorArray
+        :param neurons_number: the list of nodes number for each dense layer 
+        :type neurons_number: list
+        :param prob: the probability for dropout, defaults to 0.5
+        :type prob: float, optional
+        :return: the output after the last dense layer
+        :rtype: tf.TensorArray
+        """
+        
         prev = input
         index = 0
         for number in neurons_number:
@@ -108,6 +127,19 @@ class ProtLigNet(BaseModel):
     
     @staticmethod 
     def hidden_flc(input, out_chnls, prob, name = "flc_layer"):
+        """Computes weights of a specific dense layer
+        
+        :param input: the input data
+        :type input: tf.TensorArray
+        :param out_chnls: the number of nodes in the layer
+        :type out_chnls: int
+        :param prob: the probability for the dropout
+        :type prob: tf.TensorArray
+        :param name: the label name of the layer for the tensor graph, defaults to "flc_layer"
+        :type name: str, optional
+        :return: the output after nonlinear function mapping
+        :rtype: tf.TensorArray
+        """
         input_channels = input.get_shape()[-1].value
 
         with tf.variable_scope(name):
@@ -120,12 +152,25 @@ class ProtLigNet(BaseModel):
         return h_drop
 
     def convolve3D(self, input, channels = [64, 128, 256], conv_patch = 5, pool_patch = 2):
+        """Propogates through the convolution layers
+        
+        :param input: the complex grid of shape (Number of complexes,21,21,21,19)
+        :type input: tf.TensorArray
+        :param channels: the list of channels for each 3d convolution filter, defaults to [64, 128, 256]
+        :type channels: list, optional
+        :param conv_patch: the convolution filter width, defaults to 5
+        :type conv_patch: int, optional
+        :param pool_patch: the pooling filter width, defaults to 2
+        :type pool_patch: int, optional
+        :return: the output after the convolution layers propogation
+        :rtype: tf.TensorArray
+        """
         
         prev = input
         index = 0
         
         for channel in channels:
-            result = self.hidden_conv3D(prev, channel, conv_patch, pool_patch, name = "conv_layer_%s" % index)
+            result = selfKE(prev, channel, conv_patch, pool_patch, name = "conv_layer_%s" % index)
             prev = result
             index += 1
 
@@ -133,6 +178,23 @@ class ProtLigNet(BaseModel):
     
     @staticmethod 
     def hidden_conv3D(input, out_chnls, conv_patch = 5, pool_patch = 2, name = 'conv_layer'):
+        """Computes weights of a specific convolution layer
+        
+        :param input: the input data
+        :type input: tf.TensorArray
+        :param out_chnls: the number of channels in the convolution layer
+        :type out_chnls: int
+        :param conv_patch: he convolution filter width, defaults to 5
+        :type conv_patch: int, optional
+        :param pool_patch: the pooling filter width, defaults to 2
+        :type pool_patch: int, optional
+        :param name: the label name of the layer for the tensor graph, defaults to 'conv_layer'
+        :type name: str, optional
+        :return: the output after the convolution
+        :rtype: tf.TensorArray
+        """
+        
+        
         # just the last element in the shape
         input_channels = input.get_shape()[-1].value
 
