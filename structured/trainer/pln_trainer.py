@@ -94,7 +94,7 @@ class ProtLigTrainer(BaseTrain):
             
             predictions = predictions.reshape((predictions.shape[0],))
             # real_values = real_values.reshape((real_values.shape[0],))
-            self.record_predictions([(predictions,"predictions"), (real_values,"real_values"), (data_codes,"data_codes")], name = self.config.specific_test_name)
+            self.record_predictions([(predictions,"predictions"), (real_values,"real_values"), (data_codes,"data_codes")], name = self.config.specific_test_name[0:-4])
         else:
             logger.info("The model did not exist, please upload model meta files")
         
@@ -123,7 +123,7 @@ class ProtLigTrainer(BaseTrain):
                 
         data_set = pd.DataFrame(input_dict, columns=columns)
         predictions_folder = "predictions_on_test_cases"
-        data_set.to_csv(os.path.abspath(f"{predictions_folder}/{name}_predictions.csv"))
+        data_set.to_csv(os.path.abspath(f"logs/{predictions_folder}/{name}_predictions.csv"))
         print("Predictions are recorded")
         
      

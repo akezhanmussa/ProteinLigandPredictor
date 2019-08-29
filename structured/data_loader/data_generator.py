@@ -36,7 +36,7 @@ class DataGenerator:
         self.fill_data(affinity_for_testing=False)
     
         
-    def split_data(self, file_name, affinity_for_testing = False, make_split_for_training_validation = True):
+    def split_data(self, file_name, affinity_for_testing = False):
         """Splitting the whole data set to train and validation sets
         
         Split the data using the following parameters.
@@ -48,35 +48,24 @@ class DataGenerator:
         test_name = self.config.specific_test_name
         
         # path to benchmark core set, but could be any other test cases
-        hdf_core_file = f"{hdf_path}/{test_name}"
         hdf_path = self.config.data_path
+        hdf_core_file = f"{hdf_path}/{test_name}"
         hdf_file = hdf_path + '/' + file_name
         path_training = hdf_path + '/' +  "training.hdf"
         path_validation = hdf_path + '/' + "validation.hdf"
         path_testing = hdf_path + '/' + "testing.hdf"
         
-        # since testing folder may vary, training and validation files can be untouched 
-        if not make_split_for_training_validation:
-            with h5py.File(path_testing, 'w') as k:
-                with h5py.File(hdf_core_file, 'r') as m:
-                    for pdb_id in m.keys():
-                        ds = k.create_dataset(pdb_id, data = m[pdb_id])
-                                        
-                        if affinity_for_testing:
-                            ds.attrs['affinity'] = m[pdb_id].attrs["affinity"]
-                            
-            logger.info("The splitting is done only for testing case")
+        # benchmark set
+        if self.config.specific_test_name == "core_set":
+            core_set = Options.read_data(os.path.abspath("data_loader/core_pdbbind2013.ids"))
         else:
+            core_set = []
             
-            # benchmark set
-            if self.config.specific_test_name == "core_set":
-                core_set = Options.read_data(os.path.abspath("data_loader/core_pdbbind2013.ids"))
-            else:
-                core_set = []
-                
-            # to be sure not to add complexes to testing.hdf twice
-            excluded_complexes = defaultdict(lambda: False)
-
+        # to be sure not to add complexes to testing.hdf twice
+        excluded_complexes = defaultdict(lambda: False)
+        
+        # since testing folder may vary, training and validation files can be untouched 
+        if not self.config.testing_mode:
             if not os.path.isfile(path_training) or not os.path.isfile(path_validation) or not os.path.isfile(path_testing):
                 logger.info("the splitting has started")
                 with h5py.File(path_training, 'w') as t, \
@@ -105,18 +94,44 @@ class DataGenerator:
                                     else:
                                         ds = v.create_dataset(pdb_id, data = f[pdb_id])
                                         ds.attrs['affinity'] = f[pdb_id].attrs["affinity"]
-                            
-                            with h5py.File(hdf_core_file, 'r') as m:
-                                for pdb_id in m.keys():
-                                    if excluded_complexes[pdb_id] == False:
-                                        ds = k.create_dataset(pdb_id, data = m[pdb_id])
                                         
-                                        if affinity_for_testing:
-                                            ds.attrs['affinity'] = m[pdb_id].attrs["affinity"]
+                            self.define_test_case_hdf(hdf_test_file = hdf_core_file, 
+                                                    excluded_complexes = excluded_complexes, 
+                                                    hdf_test_writer = k, 
+                                                    affinity_for_testing = affinity_for_testing)
+                            
+                            # with h5py.File(hdf_core_file, 'r') as m:
+                            #     for pdb_id in m.keys():
+                            #         if excluded_complexes[pdb_id] == False:
+                            #             ds = k.create_dataset(pdb_id, data = m[pdb_id])
+                                        
+                            #             if affinity_for_testing:
+                            #                 ds.attrs['affinity'] = m[pdb_id].attrs["affinity"]
                                                                 
                 logger.info("The splitting is done")
             else:
                 logger.info("The splitting was done before")
+        else:
+            logger.info("The spplitting will be done only for the test case")
+            
+            with h5py.File(path_testing, 'w') as k:
+                self.define_test_case_hdf(hdf_test_file = hdf_core_file, 
+                                            excluded_complexes = excluded_complexes,
+                                            hdf_test_writer = k,
+                                            affinity_for_testing = affinity_for_testing)
+                
+            logger.info("The splitting is done")
+
+    @staticmethod
+    def define_test_case_hdf(hdf_test_file, excluded_complexes, hdf_test_writer, affinity_for_testing):
+        
+        with h5py.File(hdf_test_file, 'r') as m:
+            for pdb_id in m.keys():
+                if excluded_complexes[pdb_id] == False:
+                    ds = hdf_test_writer.create_dataset(pdb_id, data = m[pdb_id])
+                                        
+                if affinity_for_testing:
+                    ds.attrs['affinity'] = m[pdb_id].attrs["affinity"]
     
     def fill_rotations(self):
         '''Predefine the rotation matrices
@@ -192,16 +207,16 @@ class DataGenerator:
                     break
             
             for index, elem in enumerate(unique_three):
-                if index == rotation_number6:
+                if index == rotation_number:
                     break
                 pair.append(elem)
             
         if len(pair) == 0:
-            raise new ValueError("The wrong dataset name, check the name")
+            logger.info("The wrong dataset name, check the name")
         
         return pair
     
-    def fill_data(self, affinity_for_testing = True, consider_test_case_only = False):
+    def fill_data(self, affinity_for_testing = True):
         '''Filling the data from .hdf files
         
         param affinity_for_testing: whether to include the affinity data for testing folder
@@ -212,7 +227,8 @@ class DataGenerator:
         self.affinity = {}
         self.coords = {}
         self.features = {}
-        self.charges = {}
+        self.charges = defaultdict(str)
+        self.charges_std = defaultdict(str)
         
         logger.info("The filling data has started")
         
@@ -224,7 +240,7 @@ class DataGenerator:
         self.features_map = {name:i for i,name in enumerate(features_set)}
         
         # Shrink the datasets if test case is only considered
-        if consider_test_case_only:
+        if self.config.testing_mode:
             self.config.datasets = ['testing']
         
         for dataset in self.config.datasets:
@@ -271,7 +287,9 @@ class DataGenerator:
             except:
                 raise ValueError(f"Empty array was provided for charges in the dataset {dataset}")
             
-        self.charges_std = {'training':self.charges['training'].std(), 'validation':self.charges['validation'].std(), 'testing':self.charges['testing'].std()}
+            self.charges_std[dataset] = self.charges[dataset].std()
+            
+        # self.charges_std = {'training':self.charges['training'].std(), 'validation':self.charges['validation'].std(), 'testing':self.charges['testing'].std()}
         self.dset_sizes = {dataset: len(self.id_s[dataset]) for dataset in self.config.datasets}
         self.num_batches = {dataset: (size//self.config.batch_size) for dataset, size in self.dset_sizes.items()}
 

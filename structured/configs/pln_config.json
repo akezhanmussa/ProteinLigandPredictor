@@ -3,7 +3,7 @@
         "data_type":["id_s","affinity","coords","features"],
         "data_path": "/home/mussaa/Downloads/AkeFiles/Files/project/Sipga_project/chimera/preprocessed_data",
         "data_name": "general_set.hdf", 
-        "specific_test_name":"specific_complexes.hdf",
+        "specific_test_name":"one_complex.hdf",
         "only_test": true,
         "batch_size": 1,
         "split_size":0.8,
@@ -24,6 +24,7 @@
         "checkpoint_dir":"/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured/logs/model_checkpoints",
         "summary_dir":"/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured/logs/graph_summaries",
         "model_dir":"/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured/saved_models",
-        "error_dir":"/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured/logs/training_errors"
+        "error_dir":"/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured/logs/training_errors",
+        "testing_mode":true
 }
 
