@@ -4,6 +4,7 @@
         "data_path": "/home/mussaa/Downloads/AkeFiles/Files/project/Sipga_project/chimera/preprocessed_data",
         "data_name": "general_set.hdf", 
         "specific_test_name":"test_Binh.hdf",
+        "only_test": true,
         "batch_size": 1,
         "split_size":0.8,
         "num_epochs":60,
