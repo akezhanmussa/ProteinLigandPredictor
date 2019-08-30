@@ -33,13 +33,13 @@ class DataGenerator:
         self.config = config
         
         # splitting the data by folders
-        self.split_data(self.config.data_name, affinity_for_testing= False)
+        self.split_data(self.config.data_name, affinity_for_testing= self.config.affinity_for_testing)
         
         # save the rotaion matrices
         self.fill_rotations()
         
         # filling the data of lists from hdf file
-        self.fill_data(affinity_for_testing= False)
+        self.fill_data(affinity_for_testing= self.config.affinity_for_testing)
     
         
     def split_data(self, file_name, affinity_for_testing = False):

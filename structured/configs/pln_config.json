@@ -3,7 +3,7 @@
         "data_type":["id_s","affinity","coords","features"],
         "data_path": "/home/mussaa/Downloads/AkeFiles/Files/project/Sipga_project/chimera/preprocessed_data",
         "data_name": "general_set.hdf", 
-        "specific_test_name":"test_Binh.hdf",
+        "specific_test_name":"rec-log.hdf",
         "batch_size": 1,
         "split_size":0.8,
         "num_epochs":10,
@@ -22,8 +22,9 @@
         "pool_patch":2,
         "checkpoint_dir":"/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured/logs/model_checkpoints",
         "summary_dir":"/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured/logs/graph_summaries",
-        "model_dir":"/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured/trained_models/saved_models",
+        "model_dir":"/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured/trained_models/kinase",
         "error_dir":"/home/mussaa/Downloads/AkeFiles/Files/project_ver2/new_version/ProteinLigandPredictor/structured/logs/training_errors",
-        "testing_mode":true
+        "testing_mode":true,
+        "affinity_for_testing":true
 }
 

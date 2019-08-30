@@ -131,23 +131,33 @@ class ProtLigTrainer(BaseTrain):
         predictions = []
         real_values = []
         data_codes = []
-    
+
         
         if os.path.isdir(os.path.abspath(f'{self.config.model_dir}/')):
             latest_checkpoint = tf.train.latest_checkpoint(f'{self.config.model_dir}/')
             self.model.saver.restore(self.sess, latest_checkpoint)
             
+            
             print("Shape of the testing set", (self.data.dset_sizes['testing']))
-            # testing_mse_err = 0
+            testing_mse_err = 0
             
             for bi, bj in self.data.batches('testing'):
-                weight = (bj - bi)/self.data.dset_sizes["testing"]
-                prediction = self.sess.run(y, feed_dict= {x: self.data.g_batch('testing', range(bi,bj))})
+                prediction = self.sess.run(y, feed_dict = {x: self.data.g_batch('testing', range(bi,bj))})
+
+                if self.config.affinity_for_testing:
+                    weight = (bj - bi)/self.data.dset_sizes["testing"]
+                    test_err = self.sess.run(mse, feed_dict = {x: self.data.g_batch('testing', range(bi,bj)), t: self.data.affinity['testing'][bi:bj]})
+                    testing_mse_err += weight * test_err
+                    
+                # if the test case contains affinity values
+                if self.config.affinity_for_testing:
+                    real_values.append(self.convert_to_mol(self.data.affinity['testing'][bi:bj][0]))
                 
                 predictions.append(self.convert_to_mol(prediction[0]))
                 data_codes.append(self.data.id_s['testing'][bi:bj][0])
                 
-
+            if self.config.affinity_for_testing:
+                logger.info("THE TESTING RMSE ERROR {}".format(sqrt(testing_mse_err)))
             
             predictions = np.array(predictions)
             data_codes = np.array(data_codes)
