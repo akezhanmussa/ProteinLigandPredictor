@@ -1,4 +1,4 @@
-/structured/saved_models/*
+/structured/trained_models/*
 /structured/predictions_on_test_cases/*
 /structured/.vscode/*
 __pycache__/

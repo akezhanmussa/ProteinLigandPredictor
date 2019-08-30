@@ -39,7 +39,7 @@ class DataGenerator:
         self.fill_rotations()
         
         # filling the data of lists from hdf file
-        self.fill_data(affinity_for_testing=False)
+        self.fill_data(affinity_for_testing= False)
     
         
     def split_data(self, file_name, affinity_for_testing = False):
@@ -270,12 +270,17 @@ class DataGenerator:
                         self.features[dataset].append(one_set[:, 3:])
                         self.id_s[dataset].append(pdb_id)
                         
-                        if affinity_for_testing and not dataset == 'testing':
+                        if not affinity_for_testing and dataset == 'testing':
+                            continue
+                        else:
                             self.affinity[dataset].append(one_set.attrs['affinity'])
 
             self.id_s[dataset] = np.array(self.id_s[dataset])
-            
-            if affinity_for_testing or not dataset == 'testing':
+
+            if not affinity_for_testing and dataset == 'testing':
+                pass
+                #skip
+            else:
                 self.affinity[dataset] = np.reshape(self.affinity[dataset], (-1, 1))        
 
             for feature_data in self.features[dataset]:

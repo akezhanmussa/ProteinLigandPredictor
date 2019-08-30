@@ -59,11 +59,11 @@ class ProtLigTrainer(BaseTrain):
             
             if validation_mse_err < compare_error:
                 compare_error = validation_mse_err
-                self.model.saver.save(self.sess, 'saved_models/model')
+                self.model.saver.save(self.sess, f'{self.config.model_dir}/model')
 
             train_rmse_all_error.append(sqrt(training_mse_err))
             val_rmse_all_error.append(sqrt(validation_mse_err))
-            logger.info("AFTER THE EPOCH {}, the mse_training is {} and mse_validation is {}".format(epoch, sqrt(training_mse_err), sqrt(validation_mse_err)))
+            logger.info("AFTER THE EPOCH {}, the rmse_training is {} and rmse_validation is {}".format(epoch, sqrt(training_mse_err), sqrt(validation_mse_err)))
         
         self.graph_logg.train_summary_writer.close()
         self.graph_logg.test_summary_writer.close()
@@ -133,8 +133,8 @@ class ProtLigTrainer(BaseTrain):
         data_codes = []
     
         
-        if os.path.isdir(os.path.abspath('saved_models/')):
-            latest_checkpoint = tf.train.latest_checkpoint('saved_models/')
+        if os.path.isdir(os.path.abspath(f'{self.config.model_dir}/')):
+            latest_checkpoint = tf.train.latest_checkpoint(f'{self.config.model_dir}/')
             self.model.saver.restore(self.sess, latest_checkpoint)
             
             print("Shape of the testing set", (self.data.dset_sizes['testing']))

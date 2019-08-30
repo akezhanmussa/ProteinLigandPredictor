@@ -170,7 +170,7 @@ class ProtLigNet(BaseModel):
         index = 0
         
         for channel in channels:
-            result = selfKE(prev, channel, conv_patch, pool_patch, name = "conv_layer_%s" % index)
+            result = self.hidden_conv3D(prev, channel, conv_patch, pool_patch, name = "conv_layer_%s" % index)
             prev = result
             index += 1
 
